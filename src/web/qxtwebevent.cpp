@@ -90,7 +90,7 @@ browser.
  * Constructs a QxtWebRequestEvent for the specified \a sessionID, \a requestID and \a url.
  */
 QxtWebRequestEvent::QxtWebRequestEvent(int sessionID, int requestID, const QUrl& url)
-        : QxtWebEvent(QxtWebEvent::Request, sessionID), requestID(requestID), url(url), originalUrl(url) {}
+        : QxtWebEvent(QxtWebEvent::Request, sessionID), requestID(requestID), url(url), originalUrl(url), ssl(false) {}
 
 /*!
  * Destroys the event and any content that may still be associated with it.
