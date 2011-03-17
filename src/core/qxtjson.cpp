@@ -253,9 +253,15 @@ static QString parseString (QTextStream & s,bool & error){
             }else if(c=='f'){
                 str.append('\f');
             }else if(c=='u'){
-                short u;
-                s>>u;
-                str.append(QChar(u));
+                QString k;
+                for (int i = 0; i < 4; i++ ) {
+                    s >> c;
+                    k.append(c);
+                }
+                bool ok;
+                int i = k.toInt(&ok, 16);
+                if (ok)
+                    str.append(QChar(i));
             }else{
                 str.append(c);
             }
