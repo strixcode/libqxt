@@ -88,7 +88,8 @@ QxtAbstractSignalSerializer::DeserializedData QxtDataStreamSignalSerializer::des
 
 bool QxtDataStreamSignalSerializer::canDeserialize(const QByteArray& buffer) const
 {
-    int headerLen = qFromLittleEndian<quint32>(reinterpret_cast<const uchar*>(buffer.constData()));
-    int bodyLen = quint32(buffer.length() - 4);
+    if(buffer.length() < sizeof(quint32)) return false;
+    quint32 headerLen = qFromLittleEndian<quint32>(reinterpret_cast<const uchar*>(buffer.constData()));
+    quint32 bodyLen = quint32(buffer.length() - 4);
     return headerLen <= bodyLen;
 }
