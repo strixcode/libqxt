@@ -281,7 +281,7 @@ QByteArray qxt_fold_mime_header(const QString& key, const QString& value, QTextC
             {
                 if (line.length() > 72)
                 {
-                    rv += line + "?\n\r";
+                    rv += line + "?\r\n";
                     line = " =?utf-8?b?";
                 }
                 line = line + base64.mid(i, 4);
@@ -295,7 +295,7 @@ QByteArray qxt_fold_mime_header(const QString& key, const QString& value, QTextC
             {
                 if (line.length() > 73)
                 {
-                    rv += line + "?\n\r";
+                    rv += line + "?\r\n";
                     line = " =?utf-8?q?";
                 }
                 if (QXT_MUST_QP(utf8[i]) || utf8[i] == ' ')
@@ -315,9 +315,14 @@ QByteArray qxt_fold_mime_header(const QString& key, const QString& value, QTextC
 
 QByteArray QxtMailMessage::rfc2822() const
 {
+    // Use quoted-printable if requested
+    bool useQuotedPrintable = (extraHeader("Content-Transfer-Encoding").toLower() == "quoted-printable");
+    // Use base64 if requested
+    bool useBase64 = (extraHeader("Content-Transfer-Encoding").toLower() == "base64");
+    // Check to see if plain text is ASCII-clean; assume it isn't if QP or base64 was requested
     QTextCodec* latin1 = QTextCodec::codecForName("latin1");
-    bool bodyIsAscii = latin1->canEncode(body());
-    bool useQuotedPrintable = false;
+    bool bodyIsAscii = latin1->canEncode(body()) && !useQuotedPrintable && !useBase64;
+
     QHash<QString, QxtMailAttachment> attach = attachments();
     QByteArray rv;
 
@@ -345,11 +350,11 @@ QByteArray QxtMailMessage::rfc2822() const
     {
         if (!hasExtraHeader("MIME-Version") && !attach.count())
             rv += "MIME-Version: 1.0\r\n";
-        if (hasExtraHeader("Content-Transfer-Encoding"))
-        {
-            useQuotedPrintable = (extraHeader("Content-Transfer-Encoding").toLower() == "quoted-printable");
-        }
-        else
+
+        // If no transfer encoding has been requested, guess.
+        // Heuristic: If >20% of the first 100 characters aren't
+        // 7-bit clean, use base64, otherwise use Q-P.
+        if(!bodyIsAscii && !useQuotedPrintable && !useBase64)
         {
             QString b = body();
             int nonAscii = 0;
@@ -359,6 +364,7 @@ QByteArray QxtMailMessage::rfc2822() const
                 if (QXT_MUST_QP(b[i])) nonAscii++;
             }
             useQuotedPrintable = !(nonAscii > 20);
+            useBase64 = !useQuotedPrintable;
         }
     }
 
@@ -441,25 +447,23 @@ QByteArray QxtMailMessage::rfc2822() const
                     line = line + ' ' + word;
                     word = "";
                 }
-                if (line == ".")
-                    rv += "..\r\n";
-                else
-                    rv += line + "\r\n";
+                if(line[0] == '.')
+                    rv += ".";
+                rv += line + "\r\n";
                 if ((b[i+1] == '\n' || b[i+1] == '\r') && b[i] != b[i+1])
                 {
                     // If we're looking at a CRLF pair, skip the second half
                     i++;
                 }
-                line = "";
+                line = word;
             }
             else if (b[i] == ' ')
             {
                 if (line.length() + word.length() + 1 > 78)
                 {
-                    if (line == ".")
-                        rv += "..\r\n";
-                    else
-                        rv += line + "\r\n";
+                    if(line[0] == '.')
+                        rv += ".";
+                    rv += line + "\r\n";
                     line = word;
                 }
                 else if (line.isEmpty())
@@ -479,20 +483,20 @@ QByteArray QxtMailMessage::rfc2822() const
         }
         if (line.length() + word.length() + 1 > 78)
         {
-            if (line == ".")
-                rv += "..\r\n";
-            else
-                rv += line + "\r\n";
+            if(line[0] == '.')
+                rv += ".";
+            rv += line + "\r\n";
             line = word;
         }
         else if (!word.isEmpty())
         {
             line += ' ' + word;
         }
-        if (line == ".")
-            rv += "..\r\n";
-        else if (!line.isEmpty())
+        if(!line.isEmpty()) {
+            if(line[0] == '.')
+                rv += ".";
             rv += line + "\r\n";
+        }
     }
     else if (useQuotedPrintable)
     {
@@ -501,9 +505,21 @@ QByteArray QxtMailMessage::rfc2822() const
         QByteArray line;
         for (int i = 0; i < ct; i++)
         {
-            if (line.length() > 74)
+            if(b[i] == '\n' || b[i] == '\r')
             {
-                rv += line + "\n\r";
+                if(line[0] == '.')
+                    rv += ".";
+                rv += line + "\r\n";
+                line = "";
+                if ((b[i+1] == '\n' || b[i+1] == '\r') && b[i] != b[i+1])
+                {
+                    // If we're looking at a CRLF pair, skip the second half
+                    i++;
+                }
+            }
+            else if (line.length() > 74)
+            {
+                rv += line + "=\r\n";
                 line = "";
             }
             if (QXT_MUST_QP(b[i]))
@@ -515,6 +531,11 @@ QByteArray QxtMailMessage::rfc2822() const
                 line += b[i];
             }
         }
+        if(!line.isEmpty()) {
+            if(line[0] == '.')
+                rv += ".";
+            rv += line + "\r\n";
+        }
     }
     else /* base64 */
     {
@@ -522,7 +543,7 @@ QByteArray QxtMailMessage::rfc2822() const
         int ct = b.length();
         for (int i = 0; i < ct; i += 78)
         {
-            rv += b.mid(i, 78);
+            rv += b.mid(i, 78) + "\r\n";
         }
     }
 
