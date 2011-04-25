@@ -442,7 +442,12 @@ QByteArray QxtMailMessage::rfc2822() const
         {
             if (b[i] == '\n' || b[i] == '\r')
             {
-                if (line.length() + word.length() + 1 <= 78)
+                if (line.isEmpty()) 
+                {
+                    line = word;
+                    word = "";
+                }
+                else if (line.length() + word.length() + 1 <= 78)
                 {
                     line = line + ' ' + word;
                     word = "";
