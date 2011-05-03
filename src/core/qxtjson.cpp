@@ -302,10 +302,13 @@ static QVariant parseLiteral (QTextStream & s,bool & error){
                 s>>c;
             }
             s.seek(s.pos()-1);
-            if(n.contains('.')){
+            if(n.contains('.')) {
                 return n.toDouble();
-            }else{
-                return n.toInt();
+            } else {
+                bool ok = false;
+                int result = n.toInt(&ok);
+                if(ok) return result;
+                return n.toLongLong();
             }
         }
     }
