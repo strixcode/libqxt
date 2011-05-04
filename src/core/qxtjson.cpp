@@ -59,7 +59,29 @@ QString QxtJSON::stringify(QVariant v){
     }
     int t = v.type();
     if (t == QVariant::String){
-        return "\""+v.toString()+"\"";
+        QString in = v.toString();
+        QString out;
+        for(QString::ConstIterator i = in.constBegin(); i != in.constEnd(); i++){
+            if( (*i) == QChar('\b'))
+                out.append("\\b");
+            else if( (*i) == QChar('\f'))
+                out.append("\\f");
+            else if( (*i) == QChar('\n'))
+                out.append("\\n");
+            else if( (*i) == QChar('\r'))
+                out.append("\\r");
+            else if( (*i) == QChar('\t'))
+                out.append("\\t");
+            else if( (*i) == QChar('\f'))
+                out.append("\\f");
+            else if( (*i) == QChar('\\'))
+                out.append("\\\\");
+            else if( (*i) == QChar('/'))
+                out.append("\\/");
+            else
+                out.append(*i);
+        }
+        return "\""+out+"\"";
     }
     else if (t == QVariant::Bool){
         return v.toBool()?"true":"false";
