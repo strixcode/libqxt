@@ -240,13 +240,13 @@ static QVariantList parseArray (QTextStream & s,bool & error){
             return l;
         } else if (c==','){
         } else if (c=='"'){
-            l.append(parseString(s,error));
+            l.append(QVariant(parseString(s,error)));
         } else if (c=='['){
-            l.append(parseArray(s,error));
+            l.append(QVariant(parseArray(s,error)));
         } else if (c=='{'){
-            l.append(parseObject(s,error));
+            l.append(QVariant(parseObject(s,error)));
         } else {
-            l.append(parseLiteral(s,error));
+            l.append(QVariant(parseLiteral(s,error)));
         }
         s.skipWhiteSpace();
     }
