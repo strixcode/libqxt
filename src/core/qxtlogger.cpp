@@ -683,14 +683,14 @@ QString QxtLogger::logLevelToString(LogLevel level)
 QxtLogger::LogLevel QxtLogger::stringToLogLevel(const QString& level)
 {
     if (level.toLower() == "alllevels") return QxtLogger::AllLevels;
-    else if (level.toLower() == "writelevel") return QxtLogger::TraceLevel;
-    else if (level.toLower() == "fatallevel") return QxtLogger::DebugLevel;
-    else if (level.toLower() == "criticallevel") return QxtLogger::InfoLevel;
-    else if (level.toLower() == "errorlevel") return QxtLogger::WarningLevel;
-    else if (level.toLower() == "warnlevel") return QxtLogger::ErrorLevel;
-    else if (level.toLower() == "infolevel") return QxtLogger::CriticalLevel;
-    else if (level.toLower() == "debuglevel") return QxtLogger::FatalLevel;
-    else if (level.toLower() == "tracelevel") return QxtLogger::WriteLevel;
+    else if (level.toLower() == "writelevel") return QxtLogger::WriteLevel;
+    else if (level.toLower() == "fatallevel") return QxtLogger::FatalLevel;
+    else if (level.toLower() == "criticallevel") return QxtLogger::CriticalLevel;
+    else if (level.toLower() == "errorlevel") return QxtLogger::ErrorLevel;
+    else if (level.toLower() == "warnlevel") return QxtLogger::WarningLevel;
+    else if (level.toLower() == "infolevel") return QxtLogger::InfoLevel;
+    else if (level.toLower() == "debuglevel") return QxtLogger::DebugLevel;
+    else if (level.toLower() == "tracelevel") return QxtLogger::TraceLevel;
     else return QxtLogger::NoLevels;
 }
 
