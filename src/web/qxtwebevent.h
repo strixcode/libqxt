@@ -139,6 +139,7 @@ public:
     QString name;
     QString data;
     QDateTime expiration;
+    QString path;
 };
 
 class QXT_WEB_EXPORT QxtWebRemoveCookieEvent : public QxtWebEvent
@@ -147,6 +148,7 @@ public:
     QxtWebRemoveCookieEvent(int sessionID, QString name);
 
     QString name;
+    QString path;
 };
 
 class QXT_WEB_EXPORT QxtWebRedirectEvent : public QxtWebPageEvent

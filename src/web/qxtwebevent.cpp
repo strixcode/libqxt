@@ -342,9 +342,12 @@ a cookie on the web browser.
  * with the cookie. The browser will delete the cookie automatically after
  * the specified date. If an expiration date is not supplied, the cookie will
  * expire when the browser is closed.
+ *
+ * The cookie will be assigned a path of / by default. You may change this
+ * using the \a path member.
  */
 QxtWebStoreCookieEvent::QxtWebStoreCookieEvent(int sessionID, QString name, QString data, QDateTime expiration)
-        : QxtWebEvent(QxtWebEvent::StoreCookie, sessionID), name(name), data(data), expiration(expiration) {}
+        : QxtWebEvent(QxtWebEvent::StoreCookie, sessionID), name(name), data(data), expiration(expiration), path("/") {}
 
 /*!
  * \variable QxtWebStoreCookieEvent::name
@@ -363,6 +366,14 @@ QxtWebStoreCookieEvent::QxtWebStoreCookieEvent(int sessionID, QString name, QStr
  */
 
 /*!
+ * \variable QxtWebStoreCookieEvent::path
+ * Contains the path of the cookie to be stored.
+ *
+ * The default value is "/". Set the path to an empty QString to send
+ * the cookie with no path specifier.
+ */
+
+/*!
 \class QxtWebRemoveCookieEvent
 
 \inmodule QxtWeb
@@ -376,6 +387,8 @@ a cookie stored on the web browser.
 /*!
  * Constructs a QxtWebRemoveCookieEvent for the specified \a sessionID that
  * removed the cookie with \a name from the web browser.
+ *
+ * The cookie's path is / by default. You may change this using the \a path member.
  */
 QxtWebRemoveCookieEvent::QxtWebRemoveCookieEvent(int sessionID, QString name)
         : QxtWebEvent(QxtWebEvent::RemoveCookie, sessionID), name(name) {}
@@ -383,6 +396,14 @@ QxtWebRemoveCookieEvent::QxtWebRemoveCookieEvent(int sessionID, QString name)
 /*!
  * \variable QxtWebRemoveCookieEvent::name
  * Contains the name of the cookie to be removed.
+ */
+
+/*!
+ * \variable QxtWebStoreCookieEvent::path
+ * Contains the path of the cookie to be removed.
+ *
+ * The default value is "/". Set the path to an empty QString to send
+ * the cookie with no path specifier.
  */
 
 /*!

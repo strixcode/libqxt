@@ -72,7 +72,7 @@ class QxtHttpSessionManagerPrivate : public QxtPrivate<QxtHttpSessionManager>
 public:
     struct ConnectionState
     {
-        QxtBoundFunction* onBytesWritten;
+        QxtBoundFunction *onBytesWritten, *onReadyRead, *onAboutToClose;
         bool readyRead;
         bool finishedTransfer;
         bool keepAlive;
@@ -80,6 +80,13 @@ public:
         int httpMajorVersion;
         int httpMinorVersion;
         int sessionID;
+
+        void clearHandlers() {
+            delete onBytesWritten;
+            delete onReadyRead;
+            delete onAboutToClose;
+            onBytesWritten = onReadyRead = onAboutToClose = 0;
+        }
     };
 
     QxtHttpSessionManagerPrivate() : iface(QHostAddress::Any), port(80), sessionCookieName("sessionID"), connector(0), staticService(0), autoCreateSession(true),
@@ -405,6 +412,7 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
     {
         postEvent(new QxtWebErrorEvent(0, requestID, 500, "Internal Configuration Error"));
     }
+    delete event;
 }
 
 /*!
@@ -413,9 +421,11 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
 void QxtHttpSessionManager::disconnected(QIODevice* device)
 {
     QMutexLocker locker(&qxt_d().sessionLock);
-    if (qxt_d().connectionState.contains(device))
-        delete qxt_d().connectionState[device].onBytesWritten;
+    if (qxt_d().connectionState.contains(device)) {
+        qxt_d().connectionState[device].clearHandlers();
+    }
     qxt_d().connectionState.remove(device);
+    device->deleteLater(); 
 }
 
 /*!
@@ -461,6 +471,8 @@ void QxtHttpSessionManager::processEvents()
         {
             QxtWebStoreCookieEvent* ce = static_cast<QxtWebStoreCookieEvent*>(e);
             QString cookie = ce->name + '=' + ce->data;
+            if (!ce->path.isEmpty())
+                cookie += "; path=" + ce->path;
             if (ce->expiration.isValid())
             {
                 cookie += "; max-age=" + QString::number(QDateTime::currentDateTime().secsTo(ce->expiration))
@@ -472,7 +484,9 @@ void QxtHttpSessionManager::processEvents()
         else if (e->type() == QxtWebEvent::RemoveCookie)
         {
             QxtWebRemoveCookieEvent* ce = static_cast<QxtWebRemoveCookieEvent*>(e);
-            header.addValue("set-cookie", ce->name + "=; max-age=0; expires=" + QDateTime(QDate(1970, 1, 1)).toString("ddd, dd-MMM-YYYY hh:mm:ss GMT"));
+            QString path;
+            if(!ce->path.isEmpty()) path = "path=" + ce->path + "; ";
+            header.addValue("set-cookie", ce->name + "=; "+path+"max-age=0; expires=" + QDateTime(QDate(1970, 1, 1)).toString("ddd, dd-MMM-YYYY hh:mm:ss GMT"));
             removeIDs.push_front(i);
         }
     }
@@ -517,23 +531,26 @@ void QxtHttpSessionManager::processEvents()
     }
     else
     {
-        pe->dataSource = 0; // so that it isn't destroyed when the event is deleted
-        if (state.onBytesWritten) delete state.onBytesWritten;  // disconnect old handler
+        pe->dataSource = 0;     // so that it isn't destroyed when the event is deleted
+        state.clearHandlers();  // disconnect old handlers
+
         if (!pe->chunked)
         {
             state.keepAlive = false;
             state.onBytesWritten = QxtMetaObject::bind(this, SLOT(sendNextBlock(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
-            QxtMetaObject::connect(source, SIGNAL(readyRead()), QxtMetaObject::bind(this, SLOT(blockReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source)), Qt::QueuedConnection);
-            QxtMetaObject::connect(source, SIGNAL(aboutToClose()), QxtMetaObject::bind(this, SLOT(closeConnection(int)), Q_ARG(int, requestID)), Qt::QueuedConnection);
+            state.onReadyRead = QxtMetaObject::bind(this, SLOT(blockReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
+            state.onAboutToClose = QxtMetaObject::bind(this, SLOT(closeConnection(int)), Q_ARG(int, requestID));
         }
         else
         {
             header.setValue("transfer-encoding", "chunked");
             state.onBytesWritten = QxtMetaObject::bind(this, SLOT(sendNextChunk(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
-            QxtMetaObject::connect(source, SIGNAL(readyRead()), QxtMetaObject::bind(this, SLOT(chunkReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source)), Qt::QueuedConnection);
-            QxtMetaObject::connect(source, SIGNAL(aboutToClose()), QxtMetaObject::bind(this, SLOT(sendEmptyChunk(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source)), Qt::QueuedConnection);
+            state.onReadyRead = QxtMetaObject::bind(this, SLOT(chunkReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
+            state.onAboutToClose = QxtMetaObject::bind(this, SLOT(sendEmptyChunk(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
         }
         QxtMetaObject::connect(device, SIGNAL(bytesWritten(qint64)), state.onBytesWritten, Qt::QueuedConnection);
+        QxtMetaObject::connect(source, SIGNAL(readyRead()), state.onReadyRead, Qt::QueuedConnection);
+        QxtMetaObject::connect(source, SIGNAL(aboutToClose()), state.onAboutToClose, Qt::QueuedConnection);
 
         if (state.keepAlive)
         {
@@ -676,12 +693,13 @@ void QxtHttpSessionManager::sendNextBlock(int requestID, QObject* dataSourceObje
         state.readyRead = false;
         return;
     }
-    QByteArray chunk = dataSource->read(32768); // this is a good chunk size
+    QByteArray chunk = dataSource->read(32768); // empirically determined to be a good chunk size
     device->write(chunk);
     state.readyRead = false;
     if (!state.streaming && !dataSource->bytesAvailable())
     {
         closeConnection(requestID);
         dataSource->deleteLater();
+        state.clearHandlers();
     }
 }
