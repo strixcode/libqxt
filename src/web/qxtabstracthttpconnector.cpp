@@ -75,6 +75,12 @@ public:
         return nextRequestID;
     }
 
+    inline void doneWithBuffer(QIODevice* device)
+    {
+        QWriteLocker locker(&bufferLock);
+        buffers.remove(device);
+    }
+
     inline void doneWithRequest(quint32 requestID)
     {
         QWriteLocker locker(&requestLock);
@@ -184,10 +190,13 @@ void QxtAbstractHttpConnector::incomingData(QIODevice* device)
  */
 void QxtAbstractHttpConnector::disconnected()
 {
+    quint32 requestID=0;
     QIODevice* device = qobject_cast<QIODevice*>(sender());
     if (!device) return;
-    QWriteLocker locker(&qxt_d().bufferLock);
-    qxt_d().buffers.remove(device);
+
+    requestID = qxt_d().requests.key(device);
+    qxt_d().doneWithRequest(requestID);
+    qxt_d().doneWithBuffer(device);
     sessionManager()->disconnected(device);
 }
 
