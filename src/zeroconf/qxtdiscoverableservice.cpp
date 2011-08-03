@@ -243,10 +243,12 @@ void QxtDiscoverableService::setPort(quint16 port)
  * is already registered with the same service name. Otherwise, the service name will be updated with
  * a number to make it unique.
  *
+ * When present, the given TXT record string will be registered along with the service.
+ *
  * \sa registered
  * \sa registrationError
  */
-void QxtDiscoverableService::registerService(bool noAutoRename)
+void QxtDiscoverableService::registerService(bool noAutoRename, const QString& txtRecord)
 {
     if(state() != Unknown) {
         qWarning() << "QxtDiscoverableService: Cannot register service while not in Unknown state";
@@ -254,8 +256,18 @@ void QxtDiscoverableService::registerService(bool noAutoRename)
         return;
     }
 
+    QByteArray txt;
+
     QStringList subtypes = qxt_d().serviceSubTypes;
     subtypes.prepend(fullServiceType());
+
+    if (txtRecord.length()) {
+        txt.append((char)txtRecord.length());
+        txt.append(txtRecord.toUtf8());
+    }
+    else {
+        txt.fill(0, 1);
+    }
 
     DNSServiceErrorType err;
     err = DNSServiceRegister(&(qxt_d().service),
@@ -266,8 +278,8 @@ void QxtDiscoverableService::registerService(bool noAutoRename)
                              domain().isEmpty() ? 0 : domain().toUtf8().constData(),
                              host().isEmpty() ? 0 : host().toUtf8().constData(),
                              qxt_d().port,
-                             1, // must include null terminator
-                             "",
+                             txt.length(),
+                             txt.constData(),
                              QxtDiscoverableServicePrivate::registerServiceCallback,
                              &qxt_d());
     if(err != kDNSServiceErr_NoError) {
