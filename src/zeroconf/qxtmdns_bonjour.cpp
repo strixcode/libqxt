@@ -4,18 +4,24 @@
 #include <QtEndian>
 
 QxtMDNS::QxtMDNS(int id, QObject * parent)
-		: QObject(parent),
-          info(id)
+                : QObject(parent)
+                , info(id)
+                , notifier(NULL)
 {
+}
+
+QxtMDNS::~QxtMDNS()
+{
+    cancelLookup();
 }
 
 void QxtMDNS::doLookup(QString n, QObject * r, const char * m)
 {
 
-	name = n;
-	receiver = r;
-	member = QxtMetaObject::methodName(m);
-	DNSServiceErrorType err = DNSServiceQueryRecord(
+        name = n;
+        receiver = r;
+        member = QxtMetaObject::methodName(m);
+        DNSServiceErrorType err = DNSServiceQueryRecord(
 	                              &ref,
 	                              0,
 	                              0,
@@ -29,7 +35,7 @@ void QxtMDNS::doLookup(QString n, QObject * r, const char * m)
 	{
 		QHostInfo info(info.lookupId());
 		info.setErrorString("Failed to initialize the Bonjour request.");
-		QMetaObject::invokeMethod(receiver, member, Q_ARG(QHostInfo, info));
+                QMetaObject::invokeMethod(receiver, member, Q_ARG(QHostInfo, info));
 	}
 	else
 	{
@@ -40,11 +46,14 @@ void QxtMDNS::doLookup(QString n, QObject * r, const char * m)
 
 void QxtMDNS::DNSServiceQueryRecordCallback(DNSServiceRef DNSServiceRef, DNSServiceFlags flags, uint32_t interfaceIndex, DNSServiceErrorType errorCode, const char *fullname, uint16_t rrtype, uint16_t rrclass, uint16_t rdlen, const void *rdata, uint32_t ttl, void *context)
 {
-	QxtMDNS* md = static_cast<QxtMDNS*>(context);
-	QHostInfo info(md->info.lookupId());
-	uint32_t ip = qFromBigEndian(*static_cast<const uint32_t*>(rdata));
-	info.setAddresses(QList<QHostAddress>() << QHostAddress(ip));
-	QMetaObject::invokeMethod(md->receiver, md->member, Q_ARG(QHostInfo, info));
+        if (flags & kDNSServiceFlagsAdd)
+        {
+            QxtMDNS* md = static_cast<QxtMDNS*>(context);
+            QHostInfo info(md->info.lookupId());
+            uint32_t ip = qFromBigEndian(*static_cast<const uint32_t*>(rdata));
+            info.setAddresses(QList<QHostAddress>() << QHostAddress(ip));
+            QMetaObject::invokeMethod(md->receiver, md->member, Q_ARG(QHostInfo, info));
+        }
 }
 
 void QxtMDNS::socketData()
@@ -54,4 +63,7 @@ void QxtMDNS::socketData()
 
 void QxtMDNS::cancelLookup()
 {
+        DNSServiceRefDeallocate(ref);
+        if (notifier)
+            notifier->deleteLater();
 }

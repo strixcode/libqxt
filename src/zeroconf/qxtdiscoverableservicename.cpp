@@ -41,7 +41,8 @@ QxtDiscoverableServiceName::QxtDiscoverableServiceName()
 QxtDiscoverableServiceName::QxtDiscoverableServiceName(const QByteArray& domainName)
 {
 	QXT_INIT_PRIVATE(QxtDiscoverableServiceName);
-	// TODO: parse domainName
+        Q_UNUSED(domainName);
+        // TODO: parse domainName
 }
 
 QxtDiscoverableServiceName::QxtDiscoverableServiceName(const QString& name, const QString& serviceType, const QString& domain,
@@ -167,7 +168,7 @@ int QxtDiscoverableServiceName::lookupHost(const QString name, QObject* receiver
 {
 	QMutexLocker locker(&QxtDiscoverableServiceNamePrivate::idMutex);
 	QxtDiscoverableServiceNamePrivate::id++;
-	QxtMDNS* md = new QxtMDNS(QxtDiscoverableServiceNamePrivate::id);
+        QxtMDNS* md = new QxtMDNS(QxtDiscoverableServiceNamePrivate::id);
 	md->doLookup(name, receiver, member);
 	QxtDiscoverableServiceNamePrivate::lookups[QxtDiscoverableServiceNamePrivate::id] = md;
 	return QxtDiscoverableServiceNamePrivate::id;
