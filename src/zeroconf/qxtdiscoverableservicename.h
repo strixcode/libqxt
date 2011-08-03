@@ -32,6 +32,9 @@ public:
     QString host() const;
     void setHost(const QString& host);
 
+    QString txtRecord() const;
+    void setTxtRecord(const QString& txt);
+
     QByteArray escapedFullDomainName() const;
 
     //mDNS stuff

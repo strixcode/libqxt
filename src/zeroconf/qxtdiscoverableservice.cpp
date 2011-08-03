@@ -61,8 +61,6 @@ void QxtDiscoverableServicePrivate::resolveServiceCallback(DNSServiceRef service
 #endif
 {
     Q_UNUSED(service);
-    Q_UNUSED(txtLen);
-    Q_UNUSED(txt);
     Q_UNUSED(flags);
     QxtDiscoverableServicePrivate* self = reinterpret_cast<QxtDiscoverableServicePrivate*>(context);
     QxtDiscoverableService* pub = &self->qxt_p();
@@ -72,6 +70,7 @@ void QxtDiscoverableServicePrivate::resolveServiceCallback(DNSServiceRef service
         pub->setDomain(name.domain());
 	pub->setHost(host);
 	pub->setPort(qFromBigEndian(port));
+        pub->setTxtRecord(txtLen > 0 ? QString::fromUtf8((const char*)txt, txtLen) : QString());
 	self->iface = iface;
         emit pub->resolved(fullname);
     } else {
@@ -248,7 +247,7 @@ void QxtDiscoverableService::setPort(quint16 port)
  * \sa registered
  * \sa registrationError
  */
-void QxtDiscoverableService::registerService(bool noAutoRename, const QString& txtRecord)
+void QxtDiscoverableService::registerService(bool noAutoRename)
 {
     if(state() != Unknown) {
         qWarning() << "QxtDiscoverableService: Cannot register service while not in Unknown state";
@@ -256,6 +255,7 @@ void QxtDiscoverableService::registerService(bool noAutoRename, const QString& t
         return;
     }
 
+    QString txtRecord = QxtDiscoverableServiceName::txtRecord();
     QByteArray txt;
 
     QStringList subtypes = qxt_d().serviceSubTypes;

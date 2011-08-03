@@ -20,6 +20,7 @@ public:
 	QAbstractSocket::SocketType socketType;
 	QString serviceType;
 	QString host;
+         QString txt;
 
 	//mDNS stuff
 	static int id;
@@ -52,6 +53,16 @@ QxtDiscoverableServiceName::QxtDiscoverableServiceName(const QString& name, cons
 	qxt_d().domain = domain;
 	if (socketType != QAbstractSocket::UnknownSocketType)
 		qxt_d().socketType = socketType;
+}
+
+QString QxtDiscoverableServiceName::txtRecord() const
+{
+        return qxt_d().txt;
+}
+
+void QxtDiscoverableServiceName::setTxtRecord(const QString &txt)
+{
+        qxt_d().txt = txt;
 }
 
 QString QxtDiscoverableServiceName::serviceName() const

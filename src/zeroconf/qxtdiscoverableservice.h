@@ -72,7 +72,7 @@ public:
     void setPort(quint16 port);
 
     void resolve(bool forceMulticast = false);
-    void registerService(bool noAutoRename = false, const QString& txtRecord = QString());
+    void registerService(bool noAutoRename = false);
     void releaseService();
     State state() const;
 
