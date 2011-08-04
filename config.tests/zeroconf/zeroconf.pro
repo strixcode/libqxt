@@ -1,4 +1,5 @@
 unix:!macx:LIBS += -ldns_sd
+win32:LIBS += -ldnssd
 CONFIG -= app_bundle
 TEMPLATE = app
 TARGET = 
