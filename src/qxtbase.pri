@@ -36,7 +36,7 @@ TARGET = $$qxtLibraryTarget($$CLEAN_TARGET)
 include(qxtlibs.pri)
 
 macx {
-    CONFIG += absolute_library_soname
+    CONFIG(qt_no_framework): CONFIG += absolute_library_soname
     CONFIG(qt_framework, qt_framework|qt_no_framework): CONFIG += lib_bundle 
     FRAMEWORK_HEADERS.version = Versions
     FRAMEWORK_HEADERS.files   = $${HEADERS}
