@@ -167,7 +167,6 @@ int QxtAbstractWebSessionManager::createService()
  */
 void QxtAbstractWebSessionManager::sessionDestroyed(int sessionID)
 {
-    qDebug() << Q_FUNC_INFO << "sessionID" << sessionID;
 }
 
 /*!
