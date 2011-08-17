@@ -85,7 +85,6 @@ public:
 #ifndef QT_NO_OPENSSL
     QSslCertificate clientCertificate;
 #endif
-    bool ssl;
 
     QMultiHash<QString, QString> cookies;
     QMultiHash<QString, QString> headers;
