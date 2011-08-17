@@ -67,6 +67,7 @@ public:
     virtual bool start();
 
 protected:
+    virtual void sessionDestroyed(int sessionID);
     virtual int newSession();
     virtual void incomingRequest(quint32 requestID, const QHttpRequestHeader& header, QxtWebContent* device);
 

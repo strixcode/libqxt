@@ -300,6 +300,21 @@ void QxtHttpSessionManager::postEvent(QxtWebEvent* h)
 }
 
 /*!
+ * \reimp
+ *
+ * This method removes any session cookies corresponding to a deleted
+ * service.
+ */
+void QxtHttpSessionManager::sessionDestroyed(int sessionID)
+{
+    QMutexLocker locker(&qxt_d().sessionLock);
+    QUuid key = qxt_d().sessionKeys.key(sessionID);
+//    qDebug() << Q_FUNC_INFO << "sessionID" << sessionID << "key" << key;
+    if(!key.isNull())
+	qxt_d().sessionKeys.remove(key);
+}
+
+/*!
  * Creates a new session and sends the session key to the web browser.
  *
  * Subclasses may override this function to perform custom session initialization,

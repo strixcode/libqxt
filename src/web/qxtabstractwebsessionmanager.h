@@ -49,6 +49,7 @@ public:
 
 protected:
     int createService();
+    virtual void sessionDestroyed(int sessionID);
 
 protected Q_SLOTS:
     virtual void processEvents() = 0;

@@ -77,6 +77,7 @@ void QxtAbstractWebSessionManagerPrivate::sessionDestroyed(int sessionID)
     {
         freeList.enqueue(sessionID);
         sessions.remove(sessionID);
+	qxt_p().sessionDestroyed(sessionID);
     }
 }
 
@@ -154,6 +155,19 @@ int QxtAbstractWebSessionManager::createService()
     // Using QxtBoundFunction to bind the sessionID to the slot invocation
     QxtMetaObject::connect(service, SIGNAL(destroyed()), QxtMetaObject::bind(&qxt_d(), SLOT(sessionDestroyed(int)), Q_ARG(int, sessionID)), Qt::QueuedConnection);
     return sessionID; // you can always get the service with this
+}
+
+/*!
+ * Notification that a service has been destroyed.
+ *
+ * Derived classes should reimplement this method to perform any housekeeping
+ * chores needed when a service is removed (such as expiring session cookies).
+ *
+ * \note This is a stub implementation which does nothing at all.
+ */
+void QxtAbstractWebSessionManager::sessionDestroyed(int sessionID)
+{
+    qDebug() << Q_FUNC_INFO << "sessionID" << sessionID;
 }
 
 /*!
