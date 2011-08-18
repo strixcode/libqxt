@@ -102,6 +102,7 @@ public:
 
     QMutex eventLock;
     QList<QxtWebEvent*> eventQueue;
+    QHash<QPair<int,int>, QxtWebRequestEvent*> pendingRequests;
 
     QMutex sessionLock;
     QHash<QUuid, int> sessionKeys;                      // sessionKey->sessionID
@@ -300,9 +301,7 @@ void QxtHttpSessionManager::postEvent(QxtWebEvent* h)
 }
 
 /*!
- * \reimp
- *
- * This method removes any session cookies corresponding to a deleted
+ * This method removes the session cookie value corresponding to a deleted
  * service.
  */
 void QxtHttpSessionManager::sessionDestroyed(int sessionID)
@@ -344,6 +343,9 @@ int QxtHttpSessionManager::newSession()
  * Subclasses may override this function to perform preprocessing on each
  * request, but they must call the base class implementation in order to
  * generate and dispatch the appropriate events.
+ *
+ * To facilitate use with multi-threaded applications, the event will remain
+ * valid until a response is posted.
  */
 void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpRequestHeader& header, QxtWebContent* content)
 {
@@ -387,6 +389,9 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
     qxt_d().sessionLock.unlock();
 
     QxtWebRequestEvent* event = new QxtWebRequestEvent(sessionID, requestID, QUrl(header.path()));
+    qxt_d().eventLock.lock();
+    qxt_d().pendingRequests.insert(QPair<int,int>(sessionID, requestID), event);
+    qxt_d().eventLock.unlock();
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(device);
     if (socket)
     {
@@ -427,7 +432,6 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
     {
         postEvent(new QxtWebErrorEvent(0, requestID, 500, "Internal Configuration Error"));
     }
-    delete event;
 }
 
 /*!
@@ -512,6 +516,12 @@ void QxtHttpSessionManager::processEvents()
     // TODO: This should only be invoked when pipelining occurs
     // In theory it shouldn't cause any problems as POST is specced to not be pipelined
     if (content) content->ignoreRemainingContent();
+    QHash<QPair<int,int>,QxtWebRequestEvent*>::iterator iPending =
+	qxt_d().pendingRequests.find(QPair<int,int>(sessionID, requestID));
+    if(iPending != qxt_d().pendingRequests.end()){
+	delete *iPending;
+	qxt_d().pendingRequests.erase(iPending);
+    }
 
     QxtHttpSessionManagerPrivate::ConnectionState& state = qxt_d().connectionState[connector()->getRequestConnection(requestID)];
     QIODevice* source;

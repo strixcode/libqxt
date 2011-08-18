@@ -158,14 +158,15 @@ int QxtAbstractWebSessionManager::createService()
 }
 
 /*!
- * Notification that a service has been destroyed.
+ * Notification that a service has been destroyed. The \a sessionID contains
+ * the session ID# which has already been deallocated.
  *
  * Derived classes should reimplement this method to perform any housekeeping
  * chores needed when a service is removed (such as expiring session cookies).
  *
- * \note This is a stub implementation which does nothing at all.
+ * This default implementation does nothing at all.
  */
-void QxtAbstractWebSessionManager::sessionDestroyed(int sessionID)
+void QxtAbstractWebSessionManager::sessionDestroyed(int)
 {
 }
 

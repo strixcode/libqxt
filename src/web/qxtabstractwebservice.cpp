@@ -108,14 +108,16 @@ QxtAbstractWebSessionManager* QxtAbstractWebService::sessionManager() const
 
 /*!
  * \fn virtual void QxtAbstractWebService::pageRequestedEvent(QxtWebRequestEvent* event)
- * This \a event handler must be reimplemented in subclasses to receive page
- * request events.
+ * This event handler must be reimplemented in subclasses to receive page
+ * request events. The supplied \a event object is owned by the session
+ * manager and remains valid until a corresponding response has been
+ * processed. It must never be deleted by a service handler.
  *
  * Every page request event received MUST be responded to with a QxtWebPageEvent
  * or a QxtWebPageEvent subclass. This response does not have to be posted
  * during the execution of this function, to support asynchronous design, but
  * failure to post an event will cause the web browser making the request to
- * wait until it times out.
+ * wait until it times out and leak memory from pending event objects.
  *
  * \sa QxtWebRequestEvent
  */
