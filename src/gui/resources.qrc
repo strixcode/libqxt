@@ -247,5 +247,7 @@
         <file alias="flags/ZA.png">resources/flags/ZA.png</file>
         <file alias="flags/ZM.png">resources/flags/ZM.png</file>
         <file alias="flags/ZW.png">resources/flags/ZW.png</file>
+        <file alias="icons/search.png">resources/icons/search.png</file>
+        <file alias="icons/reset.png">resources/icons/reset.png</file>
     </qresource>
 </RCC>

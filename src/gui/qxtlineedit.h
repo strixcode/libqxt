@@ -26,27 +26,73 @@
 #define QXTLINEEDIT_H
 
 #include <QLineEdit>
+#include <QIcon>
 #include <qxtglobal.h>
 
 class QxtLineEditPrivate;
+class QActionEvent;
+class QResizeEvent;
+class QToolButton;
 
 class QXT_GUI_EXPORT QxtLineEdit : public QLineEdit
 {
     Q_OBJECT
+    Q_ENUMS(ButtonPosition)
+    Q_ENUMS(ResetButtonMode)
+    Q_PROPERTY(bool buttonAutoRaise READ buttonAutoRaise WRITE setButtonAutoRaise)
+    Q_PROPERTY(QIcon buttonIcon READ buttonIcon WRITE setButtonIcon)
+    Q_PROPERTY(ButtonPosition buttonPosition READ buttonPosition WRITE setButtonPosition)
+    Q_PROPERTY(ResetButtonMode resetButtonMode READ resetButtonMode WRITE setResetButtonMode)
     Q_PROPERTY(QString sampleText READ sampleText WRITE setSampleText)
 
 public:
+    enum ButtonPosition
+    {
+	NoButton,
+	PositionLeft = 0x1,
+	PositionAuto = 0x2,
+	PositionOuter = 0x4,
+	InnerRight = 0x10,
+	InnerLeft = 0x11,
+	InnerAuto = 0x12,
+	OuterRight = 0x14,
+	OuterLeft = 0x15,
+	OuterAuto = 0x16
+    };
+    enum ResetButtonMode
+    {
+	HideResetButton,
+	ShowResetNotEmpty,
+	ShowResetAlways,
+    };
     explicit QxtLineEdit(QWidget* parent = 0);
     QxtLineEdit(const QString& text, QWidget* parent = 0);
     virtual ~QxtLineEdit();
 
     QString sampleText() const;
+    bool buttonAutoRaise() const;
+    void setButtonAutoRaise(bool);
+    QIcon buttonIcon() const;
+    void setButtonIcon(const QIcon &);
+    ButtonPosition buttonPosition() const;
+    void setButtonPosition(ButtonPosition);
+    ResetButtonMode resetButtonMode() const;
+    void setResetButtonMode(ResetButtonMode);
+    QToolButton *button() const;
 
 public Q_SLOTS:
     void setSampleText(const QString& text);
 
+Q_SIGNALS:
+    void buttonClicked();
+
 protected:
     virtual void paintEvent(QPaintEvent* event);
+    virtual void actionEvent(QActionEvent *);
+    virtual void resizeEvent(QResizeEvent *);
+
+private Q_SLOTS:
+    void _qxt_textChanged(const QString &text);
 
 private:
     QXT_DECLARE_PRIVATE(QxtLineEdit)
