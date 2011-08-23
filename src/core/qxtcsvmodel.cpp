@@ -29,62 +29,6 @@
 \brief The QxtCsvModel class provides a QAbstractTableModel for CSV Files
  */
 
-/*!
-\fn QxtCsvModel::QxtCsvModel(QObject *parent = 0);
-Constructs a new QxtCsvModel with \a parent
-*/
-
-/*!
-\fn QxtCsvModel::~QxtCsvModel();
-Destructor
-*/
-
-/*!
-\fn QxtCsvModel::QxtCsvModel(QIODevice *file, QObject *parent=0, bool withHeader = false, QChar separator= ',')
-constructs a QxtCsvModel from a QIODevice \a file as source
-\a withHeader specifies if the data on the device contains a header or not.
-\a separator is the separator to use for the columns. most widely used separators are ','  '\\t' ';'
-*/
-
-/*!
-\fn QxtCsvModel::QxtCsvModel(const QString filename, QObject *parent = 0, bool withHeader = false, QChar separator = ',')
-constructs a QxtCsvModel from \a filename as source
-\a withHeader specifies if the data in the file contains a header or not.
-\a separator is the separator to use for the columns. most widely used separators are ','  '\\t' ';'
-*/
-
-/*!
-\fn  void QxtCsvModel::setSource(QIODevice *file, bool withHeader = false, QChar separator = ',');
-reads the cvs data from \a file
-\a withHeader specifies if the data on the device contains a header or not.
-\a separator is the separator to use for the columns. most widely used separators are ','  '\\t' ';'
-*/
-
-
-/*!
-\fn    void QxtCsvModel::setSource(const QString filename, bool withHeader = false, QChar separator = ',');
-reads the cvs data from \a filename
-\a withHeader specifies if the data in the file contains a header or not.
-\a separator is the separator to use for the columns. most widely used separators are ','  '\\t' ';'
-*/
-
-
-
-/*!
-\fn   void QxtCsvModel::toCSV(QIODevice *file, bool withHeader = false, QChar separator = ',');
-writes the cvs data to \a file
-\a withHeader specifies if to write the header or not
-\a separator is the separator to use for the columns. most widely used separators are ','  '\\t' ';'
-*/
-
-
-/*!
-\fn    void QxtCsvModel::toCSV(const QString filename, bool withHeader = false, QChar separator = ',');
-writes the cvs data to \a filename
-\a withHeader specifies if to write the header or not
-\a separator is the separator to use for the columns. most widely used separators are ','  '\\t' ';'
-*/
-
 
 
 #include "qxtcsvmodel.h"
@@ -105,17 +49,38 @@ public:
     QxtCsvModel::QuoteMode quoteMode;
 };
 
+/*!
+  Creates an empty QxtCsvModel with parent \a parent.
+  */
 QxtCsvModel::QxtCsvModel(QObject *parent) : QAbstractTableModel(parent)
 {
     QXT_INIT_PRIVATE(QxtCsvModel);
 }
 
+/*!
+  Creates a QxtCsvModel with the parent \a parent and content loaded from \a file.
+
+  See \a setSource for information on the \a withHeader and \a separator properties, or
+  if you need control over the quoting method or codec used to parse the file.
+
+  \sa setSource
+  */
 QxtCsvModel::QxtCsvModel(QIODevice *file, QObject *parent, bool withHeader, QChar separator) : QAbstractTableModel(parent)
 {
     QXT_INIT_PRIVATE(QxtCsvModel);
     setSource(file, withHeader, separator);
 }
 
+/*!
+  \overload 
+
+  Creates a QxtCsvModel with the parent \a parent and content loaded from \a file.
+
+  See \a setSource for information on the \a withHeader and \a separator properties, or
+  if you need control over the quoting method or codec used to parse the file.
+
+  \sa setSource
+  */
 QxtCsvModel::QxtCsvModel(const QString filename, QObject *parent, bool withHeader, QChar separator) : QAbstractTableModel(parent)
 {
     QXT_INIT_PRIVATE(QxtCsvModel);
@@ -172,12 +137,26 @@ QVariant QxtCsvModel::headerData(int section, Qt::Orientation orientation, int r
         return QAbstractTableModel::headerData(section, orientation, role);
 }
 
+/*!
+  \overload
+
+  Reads in a CSV file from the provided \a file using \a codec.
+  */
 void QxtCsvModel::setSource(const QString filename, bool withHeader, QChar separator, QTextCodec* codec)
 {
     QFile src(filename);
     setSource(&src, withHeader, separator, codec);
 }
 
+/*!
+  Reads in a CSV file from the provided \a file using \a codec.
+
+  The value of \a separator will be used to delimit fields, subject to the specified \a quoteMode.
+  If \a withHeader is set to true, the first line of the file will be used to populate the model's
+  horizontal header.
+  
+  \sa quoteMode
+  */
 void QxtCsvModel::setSource(QIODevice *file, bool withHeader, QChar separator, QTextCodec* codec)
 {
     QxtCsvModelPrivate* d_ptr = &qxt_d();
@@ -266,12 +245,28 @@ void QxtCsvModel::setSource(QIODevice *file, bool withHeader, QChar separator, Q
 }
 
 /*!
-    \reimp
+  Sets the horizontal headers of the model to the values provided in \a data.
  */
-void QxtCsvModel::setHeaderData(const QStringList data)
+void QxtCsvModel::setHeaderData(const QStringList& data)
 {
     qxt_d().header = data;
     emit headerDataChanged(Qt::Horizontal, 0, data.count());
+}
+
+/*!
+  \reimp
+  */
+bool QxtCsvModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant& value, int role)
+{
+    if(orientation != Qt::Horizontal) return false;                   // We don't support the vertical header
+    if(role != Qt::DisplayRole || role != Qt::EditRole) return false; // We don't support any other roles
+    if(section < 0) return false;                                     // Bogus input
+    while(section > qxt_d().header.size()) {
+        qxt_d().header << QString();
+    }
+    qxt_d().header[section] = value.toString();
+    emit headerDataChanged(Qt::Horizontal, section, section);
+    return true;
 }
 
 /*!
@@ -427,6 +422,12 @@ static QString qxt_addCsvQuotes(QxtCsvModel::QuoteMode mode, QString field)
     return field;
 }
 
+/*!
+  Outputs the content of the model as a CSV file to the device \a dest using \a codec.
+
+  Fields in the output file will be separated by \a separator. Set \a withHeader to true
+  to output a row of headers at the top of the file.
+ */ 
 void QxtCsvModel::toCSV(QIODevice* dest, bool withHeader, QChar separator, QTextCodec* codec)
 {
     QxtCsvModelPrivate& d_ptr = qxt_d();
@@ -462,6 +463,14 @@ void QxtCsvModel::toCSV(QIODevice* dest, bool withHeader, QChar separator, QText
     dest->close();
 }
 
+/*!
+  \overload
+
+  Outputs the content of the model as a CSV file to the file specified by \a filename using \a codec.
+
+  Fields in the output file will be separated by \a separator. Set \a withHeader to true
+  to output a row of headers at the top of the file.
+ */ 
 void QxtCsvModel::toCSV(const QString filename, bool withHeader, QChar separator, QTextCodec* codec)
 {
     QFile dest(filename);
@@ -476,7 +485,7 @@ Qt::ItemFlags QxtCsvModel::flags(const QModelIndex& index) const
     return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 }
 
-/**
+/*!
  * Returns the current quoting mode.
  * \sa setQuoteMode
  */
@@ -485,7 +494,7 @@ QxtCsvModel::QuoteMode QxtCsvModel::quoteMode() const
     return qxt_d().quoteMode;
 }
 
-/**
+/*!
  * Sets the current quoting mode. The default quoting mode is BothQuotes | BackslashEscape.
  *
  * The quoting mode determines what kinds of quoting is used for reading and writing CSV files.
@@ -495,4 +504,44 @@ QxtCsvModel::QuoteMode QxtCsvModel::quoteMode() const
 void QxtCsvModel::setQuoteMode(QuoteMode mode)
 {
     qxt_d().quoteMode = mode;
+}
+
+/*!
+  Sets the content of the cell at row \a row and column \a column to \a value.
+  
+  \sa text
+  */
+void QxtCsvModel::setText(int row, int column, const QString& value)
+{
+    setData(index(row, column), value);
+}
+
+/*!
+  Fetches the content of the cell at row \a row and column \a column.
+  
+  \sa setText
+  */
+QString QxtCsvModel::text(int row, int column) const
+{
+    return data(index(row, column)).toString();
+}
+
+/*!
+  Sets the content of the header for column \a column to \a value.
+  
+  \sa headerText
+  */
+void QxtCsvModel::setHeaderText(int column, const QString& value)
+{
+    setHeaderData(column, Qt::Horizontal, value);
+}
+
+/*!
+  Fetches the content of the cell at row \a row and column \a column.
+  
+  \sa setText
+  */
+QString QxtCsvModel::headerText(int column) const
+{
+    return headerData(column, Qt::Horizontal).toString();
 }

@@ -50,7 +50,13 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
     bool setData(const QModelIndex& index, const QVariant& data, int role = Qt::EditRole);
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    void setHeaderData(const QStringList data);
+    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant& value, int role = Qt::DisplayRole);
+    void setHeaderData(const QStringList& data);
+    QString text(int row, int column) const;
+    void setText(int row, int column, const QString& value);
+    QString headerText(int column) const;
+    void setHeaderText(int column, const QString& value);
+
 
     bool insertRow(int row, const QModelIndex& parent = QModelIndex());
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex());
