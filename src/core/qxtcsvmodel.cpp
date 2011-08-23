@@ -213,7 +213,7 @@ void QxtCsvModel::setSource(QIODevice *file, bool withHeader, QChar separator, Q
             readCR = true;
         else
             readCR = false;
-        if(ch.category() == QChar::Separator_Line || ch.category() == QChar::Separator_Paragraph || ch.category() == QChar::Other_Control) {
+        if(ch != separator && (ch.category() == QChar::Separator_Line || ch.category() == QChar::Separator_Paragraph || ch.category() == QChar::Other_Control)) {
             row << field;
             field.clear();
             if(!row.isEmpty()) {
