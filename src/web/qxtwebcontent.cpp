@@ -150,7 +150,7 @@ qint64 QxtWebContent::readData(char* data, qint64 maxSize)
         maxSize -= sz;
         qxt_d().start.clear();
     }
-    else if (sz > 0 && sz > maxSize)
+    else if (sz > 0 && sz >= maxSize)
     {
         memcpy(writePtr, qxt_d().start.constData(), maxSize);
         qxt_d().start = qxt_d().start.mid(maxSize);
