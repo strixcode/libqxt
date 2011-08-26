@@ -71,7 +71,7 @@ class QXT_WEB_EXPORT QxtWebRequestEvent : public QxtWebEvent
 {
 public:
     QxtWebRequestEvent(int sessionID, int requestID, const QUrl& url);
-    ~QxtWebRequestEvent();
+    virtual ~QxtWebRequestEvent();
 
     const int requestID;
 
