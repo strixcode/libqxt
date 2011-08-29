@@ -67,6 +67,8 @@ HEADERS  += qxtfilterdialog.h
 HEADERS  += qxtfilterdialog_p.h
 HEADERS  += qxtlookuplineedit.h
 HEADERS  += qxtlookuplineedit_p.h
+HEADERS  += qxtmultirootproxymodel.h
+HEADERS  += qxtmultirootproxymodel_p.h
 
 SOURCES  += qxtbasespinbox.cpp
 SOURCES  += qxtcheckcombobox.cpp
@@ -111,6 +113,7 @@ SOURCES  += qxtscheduleheaderwidget.cpp
 SOURCES  += qxtsortfilterproxymodel.cpp
 SOURCES  += qxtfilterdialog.cpp
 SOURCES  += qxtlookuplineedit.cpp
+SOURCES  += qxtmultirootproxymodel.cpp
 
 !qws:!symbian {
     # QxtApplication, QxtGlobalShortcut, QxtScreen and
