@@ -43,39 +43,37 @@ QxtWeb uses QxtWebContent as an abstraction for streaming data.
 #include "qxtwebcontent.h"
 #include <string.h>
 #include <QUrl>
+#include <QCoreApplication>
+#include <QThread>
 
 #ifndef QXT_DOXYGEN_RUN
 class QxtWebContentPrivate : public QxtPrivate<QxtWebContent>
 {
 public:
-    QxtWebContentPrivate() : ignoreRemaining(false) {}
+    QxtWebContentPrivate() : bytesNeeded(0), ignoreRemaining(false) {}
     QXT_DECLARE_PUBLIC(QxtWebContent)
 
-    void init(int contentLength, const QByteArray& start, QIODevice* device)
+    void init(int contentLength, QIODevice* device)
     {
-        this->start = start;
-        this->device = device;
-        if (contentLength <= 0)
-            bytesRemaining = -1;
-        else
-            bytesRemaining = contentLength - start.length();
-        if (device)
-        {
-            QObject::connect(device, SIGNAL(readyRead()), &qxt_p(), SIGNAL(readyRead()));
-            // QObject::connect(device, SIGNAL(aboutToClose()), this, SIGNAL(aboutToClose()));
-            // QObject::connect(device, SIGNAL(destroyed()), this, SIGNAL(aboutToClose()));
-            // ask the object if it has an error signal
-            if (device->metaObject()->indexOfSignal(QMetaObject::normalizedSignature(SIGNAL(error(QAbstractSocket::SocketError)))) >= 0)
-            {
-                QObject::connect(device, SIGNAL(error(QAbstractSocket::SocketError)), &qxt_p(), SLOT(errorReceived(QAbstractSocket::SocketError)));
-            }
-        }
-        qxt_p().setOpenMode(QIODevice::ReadOnly);
+        if (contentLength < 0)
+            bytesNeeded = -1;
+        else{
+            bytesNeeded = contentLength - qxt_p().bytesAvailable();
+	    Q_ASSERT(bytesNeeded >= 0);
+	}
+	if(device){
+	    // Connect a disconnected signal if it has one
+	    if(device->metaObject()->indexOfSignal(QMetaObject::normalizedSignature(SIGNAL(disconnected()))) >= 0){
+		QObject::connect(device, SIGNAL(disconnected()), &qxt_p(), SLOT(ignoreRemainingContent()));
+	    }
+	    // Likewise, connect an error signal if it has one
+	    if(device->metaObject()->indexOfSignal(QMetaObject::normalizedSignature(SIGNAL(error(QAbstractSocket::SocketError)))) >= 0){
+		QObject::connect(device, SIGNAL(error(QAbstractSocket::SocketError)), &qxt_p(), SLOT(errorReceived(QAbstractSocket::SocketError)));
+	    }
+	}
     }
 
-    qint64 bytesRemaining;
-    QByteArray start;
-    QIODevice* device;
+    qint64 bytesNeeded;
     bool ignoreRemaining;
 };
 #endif
@@ -83,30 +81,18 @@ public:
 /*!
  * Constructs a QxtWebContent object.
  *
- * The content provided by this constructor is the first \a contentLength bytes
- * read from the provided \a device.
+ * The content provided by this constructor is the data contained in \a prime,
+ * followed by whatever data is subsequently written to this object from the
+ * source device up to the specified \a contentLength. Note that the provided
+ * \a sourceDevice is used solely to detect socket errors and does not specify
+ * parentage.
  *
- * The QxtWebContent object is parented to the \a device.
  */
-QxtWebContent::QxtWebContent(int contentLength, QIODevice* device) : QIODevice(device)
+QxtWebContent::QxtWebContent(int contentLength, const QByteArray& prime,
+	QObject *parent, QIODevice* sourceDevice) : QxtFifo(prime, parent)
 {
     QXT_INIT_PRIVATE(QxtWebContent);
-    qxt_d().init(contentLength, QByteArray(), device);
-}
-
-/*!
- * Constructs a QxtWebContent object.
- *
- * The content provided by this constructor is the data contained in \a start,
- * followed by enough data read from the provided \a device to fill the desired
- * \a contentLength.
- *
- * The QxtWebContent object is parented to the \a device.
- */
-QxtWebContent::QxtWebContent(int contentLength, const QByteArray& start, QIODevice* device) : QIODevice(device)
-{
-    QXT_INIT_PRIVATE(QxtWebContent);
-    qxt_d().init(contentLength, start, device);
+    qxt_d().init(contentLength, sourceDevice);
 }
 
 /*!
@@ -115,21 +101,12 @@ QxtWebContent::QxtWebContent(int contentLength, const QByteArray& start, QIODevi
  * The content provided by this constructor is exactly the data contained in
  * \a content.
  */
-QxtWebContent::QxtWebContent(const QByteArray& content, QObject* parent) : QIODevice(parent)
+QxtWebContent::QxtWebContent(const QByteArray& content, QObject* parent)
+: QxtFifo(content, parent)
 {
     QXT_INIT_PRIVATE(QxtWebContent);
-    qxt_d().init(content.size(), content, 0);
-}
-
-/*!
- * \reimp
- */
-qint64 QxtWebContent::bytesAvailable() const
-{
-    qint64 available = QIODevice::bytesAvailable() + (qxt_d().device ? qxt_d().device->bytesAvailable() : 0) + qxt_d().start.count();
-    if (available > qxt_d().bytesRemaining)
-        return qxt_d().bytesRemaining;
-    return available;
+    qxt_d().init(content.size(), 0);
+    setOpenMode(ReadOnly);
 }
 
 /*!
@@ -137,61 +114,60 @@ qint64 QxtWebContent::bytesAvailable() const
  */
 qint64 QxtWebContent::readData(char* data, qint64 maxSize)
 {
-    char* writePtr = data;
-    // read more than 32k; TCP ideally handles 48k blocks but we need wiggle room
-    if (maxSize > 32768) maxSize = 32768;
-
-    // don't read more than the content-length
-    int sz = qxt_d().start.count();
-    if (sz > 0 && maxSize > sz)
-    {
-        memcpy(writePtr, qxt_d().start.constData(), sz);
-        writePtr += sz;
-        maxSize -= sz;
-        qxt_d().start.clear();
-    }
-    else if (sz > 0 && sz >= maxSize)
-    {
-        memcpy(writePtr, qxt_d().start.constData(), maxSize);
-        qxt_d().start = qxt_d().start.mid(maxSize);
-        return maxSize;
-    }
-
-    if (qxt_d().device == 0)
-    {
-        return sz;
-    }
-    else if (qxt_d().bytesRemaining >= 0)
-    {
-        qint64 readBytes = qxt_d().device->read(writePtr, (maxSize > qxt_d().bytesRemaining) ? qxt_d().bytesRemaining : maxSize);
-        qxt_d().bytesRemaining -= readBytes;
-        if (qxt_d().bytesRemaining == 0) QMetaObject::invokeMethod(this, "aboutToClose", Qt::QueuedConnection);
-        return sz + readBytes;
-    }
-    else
-    {
-        return sz + qxt_d().device->read(writePtr, maxSize);
-    }
+    int result = QxtFifo::readData(data, maxSize);
+    if(bytesAvailable() == 0 && bytesNeeded() == 0)
+        QMetaObject::invokeMethod(this, "aboutToClose", Qt::QueuedConnection);
+    return result;
 }
 
 /*!
- * Returns the number of bytes of content that have not yet been read.
- *
- * Note that not all of the remaining content may be immediately available for
- * reading. This function returns the content length, minus the number of
- * bytes that have already been read.
+ * Returns true if the total content size is unknown and false otherwise.
+ */
+bool QxtWebContent::wantAll() const
+{
+    return (qxt_d().bytesNeeded == -1);
+}
+
+/*!
+ * Returns the total number of bytes of content expected. This will be -1
+ * if the total content size is unknown.
  */
 qint64 QxtWebContent::unreadBytes() const
 {
-    return qxt_d().start.size() + qxt_d().bytesRemaining;
+    if(wantAll())
+	return -1;
+    return bytesAvailable() + bytesNeeded();
+}
+
+/*!
+ * Returns the number of bytes of content that have not yet been written
+ * from the source device. This will be -1 if the total content size is
+ * unknown.
+ */
+qint64 QxtWebContent::bytesNeeded() const
+{
+    return qxt_d().bytesNeeded;
 }
 
 /*!
  * \reimp
  */
-qint64 QxtWebContent::writeData(const char*, qint64)
+qint64 QxtWebContent::writeData(const char *data, qint64 maxSize)
 {
-    // always an error to write
+    if(!(openMode() & WriteOnly))
+	return -1; // Not accepting writes
+    if(maxSize > 0) {
+	// This must match the QxtFifo implementation for consistency
+        if(maxSize > INT_MAX) maxSize = INT_MAX; // qint64 could easily exceed QAtomicInt, so let's play it safe
+	if(qxt_d().bytesNeeded >= 0){
+	    qxt_d().bytesNeeded -= maxSize;
+	    Q_ASSERT(qxt_d().bytesNeeded >= 0);
+	}
+	if(qxt_d().ignoreRemaining)
+	    return maxSize;
+	return QxtFifo::writeData(data, maxSize);
+    }
+    // Error
     return -1;
 }
 
@@ -200,7 +176,9 @@ qint64 QxtWebContent::writeData(const char*, qint64)
  */
 void QxtWebContent::errorReceived(QAbstractSocket::SocketError)
 {
-    setErrorString(qxt_d().device->errorString());
+    QIODevice *device = qobject_cast<QIODevice*>(sender());
+    if(device)
+	setErrorString(device->errorString());
 }
 
 /*!
@@ -212,14 +190,12 @@ void QxtWebContent::errorReceived(QAbstractSocket::SocketError)
  */
 void QxtWebContent::waitForAllContent()
 {
-    if (!qxt_d().device) return;
-    QByteArray buffer;
-    while (qxt_d().device && qxt_d().bytesRemaining > 0)
-    {
-        buffer = qxt_d().device->readAll();
-        qxt_d().start += buffer;
-        qxt_d().bytesRemaining -= buffer.size();
-        if (qxt_d().bytesRemaining > 0) qxt_d().device->waitForReadyRead(-1);
+    while(qxt_d().bytesNeeded != 0 && !qxt_d().ignoreRemaining){
+	// Still need data ... yield processing
+	if(QCoreApplication::hasPendingEvents())
+	    QCoreApplication::processEvents();
+	if(this->thread() != QThread::currentThread())
+	    QThread::yieldCurrentThread();
     }
 }
 
@@ -231,11 +207,10 @@ void QxtWebContent::waitForAllContent()
  */
 void QxtWebContent::ignoreRemainingContent()
 {
-    if (qxt_d().bytesRemaining <= 0 || !qxt_d().device) return;
-    if (!qxt_d().ignoreRemaining)
-    {
-        qxt_d().ignoreRemaining = true;
-        QObject::connect(qxt_d().device, SIGNAL(readyRead()), this, SLOT(ignoreRemainingContent()));
+    if (qxt_d().bytesNeeded <= 0) return;
+    if(!qxt_d().ignoreRemaining){
+	qxt_d().ignoreRemaining = true;
+	qxt_d().bytesNeeded = 0;
     }
 }
 

@@ -51,6 +51,7 @@ headers (by implementing writeHeaders(QIODevice*, const QHttpResponseHeader&)).
 #include <QHash>
 #include <QIODevice>
 #include <QByteArray>
+#include <QPointer>
 
 #ifndef QXT_DOXYGEN_RUN
 class QxtAbstractHttpConnectorPrivate : public QxtPrivate<QxtAbstractHttpConnector>
@@ -59,6 +60,7 @@ public:
     QxtHttpSessionManager* manager;
     QReadWriteLock bufferLock, requestLock;
     QHash<QIODevice*, QByteArray> buffers;  // connection->buffer
+    QHash<QIODevice*, QPointer<QxtWebContent> > contents;  // connection->content
     QHash<quint32, QIODevice*> requests;    // requestID->connection
     quint32 nextRequestID;
 
@@ -79,6 +81,7 @@ public:
     {
         QWriteLocker locker(&bufferLock);
         buffers.remove(device);
+	contents.remove(device);
     }
 
     inline void doneWithRequest(quint32 requestID)
@@ -162,25 +165,70 @@ void QxtAbstractHttpConnector::incomingData(QIODevice* device)
         device = qobject_cast<QIODevice*>(sender());
         if (!device) return;
     }
-    QReadLocker locker(&qxt_d().bufferLock);
-    QByteArray& buffer = qxt_d().buffers[device];
-    buffer.append(device->readAll());
-    if (!canParseRequest(buffer)) return;
-    QHttpRequestHeader header = parseRequest(buffer);
-    QxtWebContent* content = 0;
-    QByteArray start;
-    if (header.contentLength() > 0)
+    // Scope things so we don't block access during incomingRequest()
+    QHttpRequestHeader header;
+    QxtWebContent *content = 0;
     {
-        start = buffer.left(header.value("content-length").toInt());
-        buffer = buffer.mid(header.value("content-length").toInt());
-        content = new QxtWebContent(header.contentLength(), start, device);
+	// Fetch the incoming data block
+	QByteArray block = device->readAll();
+	// Check for a current content "device"
+	QReadLocker locker(&qxt_d().bufferLock);
+	content = qxt_d().contents[device];
+	if(content && (content->wantAll() || content->bytesNeeded() > 0)){
+	    // This block (or part of it) belongs to content device
+	    qint64 needed = block.size();
+	    if(!content->wantAll() && needed > content->bytesNeeded())
+		needed = content->bytesNeeded();
+	    content->write(block.constData(), needed);
+	    if(block.size() <= needed)
+		return; // Used it all ...
+	    block.remove(0, needed);
+	}
+	// The data received represents a new request (or start thereof)
+	qxt_d().contents[device] = content = NULL;
+	QByteArray& buffer = qxt_d().buffers[device];
+	buffer.append(block);
+	if (!canParseRequest(buffer)) return;
+	// Have received all of the headers so we can start processing
+	header = parseRequest(buffer);
+	QByteArray start;
+	int len = header.hasContentLength() ? int(header.contentLength()) : -1;
+	if(len > 0)
+	{
+	    if(len <= buffer.size()){
+		// This request is fully-received & excess is another request
+		// Leave in buffer & we'll fake a following "readyRead()"
+		start = buffer.left(len);
+		buffer = buffer.mid(len);
+		content = new QxtWebContent(start, this);
+		QMetaObject::invokeMethod(this, "incomingData",
+			Qt::QueuedConnection, Q_ARG(QIODevice*, device));
+	    }
+	    else{
+		// This request isn't finished yet but may still have one to
+		// follow it. Remember the content device so we can append to
+		// it until we've got it all.
+		start = buffer;
+		buffer.clear();
+		qxt_d().contents[device] = content =
+		    new QxtWebContent(len, start, this, device);
+	    }
+	}
+	else if (header.hasKey("connection") && header.value("connection").toLower() == "close")
+	{
+	    // Not pipelining so we want to pass all remaining data to the
+	    // content device. Although 'len' will be -1, we're using an
+	    // explict value for clarity. This causes the content device
+	    // to indicate it wants all remaining data.
+	    start = buffer;
+	    buffer.clear();
+	    qxt_d().contents[device] = content =
+		new QxtWebContent(-1, start, this, device);
+	} // else no content
+	//
+	// NOTE: Buffer lock goes out of scope after this point
     }
-    else if (header.hasKey("connection") && header.value("connection").toLower() == "close")
-    {
-        start = buffer;
-        buffer.clear();
-        content = new QxtWebContent(header.contentLength(), start, device);
-    } // else no content
+    // Allocate request ID and process it
     quint32 requestID = qxt_d().getNextRequestID(device);
     sessionManager()->incomingRequest(requestID, header, content);
 }

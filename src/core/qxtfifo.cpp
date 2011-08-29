@@ -68,6 +68,9 @@ struct QxtFifoNode {
     QxtFifoNode(const char* data, int size) : content(data, size) {
         next = NULL;
     }
+    QxtFifoNode(const QByteArray &data) : content(data) {
+        next = NULL;
+    }
    
     QByteArray content;
     QBasicAtomicPointer<QxtFifoNode> next;
@@ -92,6 +95,18 @@ QxtFifo::QxtFifo(QObject *parent) : QIODevice(parent)
 {
     QXT_INIT_PRIVATE(QxtFifo);
     setOpenMode(QIODevice::ReadWrite);
+}
+
+/*!
+Constructs a new QxtFifo with \a parent and initial content from \a prime.
+*/
+QxtFifo::QxtFifo(const QByteArray &prime, QObject *parent) : QIODevice(parent)
+{
+    QXT_INIT_PRIVATE(QxtFifo);
+    setOpenMode(QIODevice::ReadWrite);
+    // Since we're being constructed, access to the internals is safe
+    qxt_d().head->content = prime;
+    qxt_d().available = prime.size();
 }
 
 /*!

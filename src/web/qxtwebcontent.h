@@ -30,18 +30,20 @@
 #include <QByteArray>
 #include <QHash>
 #include <qxtglobal.h>
+#include <qxtfifo.h>
 
 class QxtWebContentPrivate;
-class QXT_WEB_EXPORT QxtWebContent : public QIODevice
+class QXT_WEB_EXPORT QxtWebContent : public QxtFifo
 {
     Q_OBJECT
 public:
-    QxtWebContent(int contentLength, const QByteArray& start, QIODevice* device);
-    QxtWebContent(int contentLength, QIODevice* device);
+    QxtWebContent(int contentLength, const QByteArray& start, QObject *parent,
+	    QIODevice* sourceDevice);
     explicit QxtWebContent(const QByteArray& content, QObject* parent = 0);
     static QHash<QString, QString> parseUrlEncodedQuery(const QString& data);
 
-    virtual qint64 bytesAvailable() const;
+    bool wantAll() const;
+    qint64 bytesNeeded() const;
     qint64 unreadBytes() const;
 
     void waitForAllContent();
