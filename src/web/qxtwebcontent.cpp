@@ -28,10 +28,10 @@
 
 \inmodule QxtWeb
 
-\brief The QxtWebContent class provides and I/O device for data sent by the web browser
+\brief The QxtWebContent class provides an I/O device for data sent by the web browser
 
-QxtWebContent is a read-only QIODevice subclass that encapsulates data sent
-from the web browser, for instance in a POST or PUT request.
+QxtWebContent is a QxtFifo subclass that encapsulates data sent from the web
+browser, for instance in a POST or PUT request.
 
 In order to avoid delays while reading content sent from the client, and to
 insulate multiple pipelined requests on the same connection from each other,
@@ -64,7 +64,7 @@ public:
 	if(device){
 	    // Connect a disconnected signal if it has one
 	    if(device->metaObject()->indexOfSignal(QMetaObject::normalizedSignature(SIGNAL(disconnected()))) >= 0){
-		QObject::connect(device, SIGNAL(disconnected()), &qxt_p(), SLOT(ignoreRemainingContent()));
+		QObject::connect(device, SIGNAL(disconnected()), &qxt_p(), SLOT(sourceDisconnect()), Qt::QueuedConnection);
 	    }
 	    // Likewise, connect an error signal if it has one
 	    if(device->metaObject()->indexOfSignal(QMetaObject::normalizedSignature(SIGNAL(error(QAbstractSocket::SocketError)))) >= 0){
@@ -79,13 +79,14 @@ public:
 #endif
 
 /*!
- * Constructs a QxtWebContent object.
+ * Constructs a QxtWebContent object with the specified \a parent.
  *
  * The content provided by this constructor is the data contained in \a prime,
  * followed by whatever data is subsequently written to this object from the
  * source device up to the specified \a contentLength. Note that the provided
  * \a sourceDevice is used solely to detect socket errors and does not specify
- * parentage.
+ * parentage. This variation is ReadWrite to permit incoming data but should
+ * never be written to by the service handler.
  *
  */
 QxtWebContent::QxtWebContent(int contentLength, const QByteArray& prime,
@@ -99,7 +100,7 @@ QxtWebContent::QxtWebContent(int contentLength, const QByteArray& prime,
  * Constructs a QxtWebContent object with the specified \a parent.
  *
  * The content provided by this constructor is exactly the data contained in
- * \a content.
+ * \a content. This variation is ReadOnly.
  */
 QxtWebContent::QxtWebContent(const QByteArray& content, QObject* parent)
 : QxtFifo(content, parent)
@@ -121,7 +122,8 @@ qint64 QxtWebContent::readData(char* data, qint64 maxSize)
 }
 
 /*!
- * Returns true if the total content size is unknown and false otherwise.
+ *  Returns \bold true if the total content size is unknown and
+ *  \bold false otherwise.
  */
 bool QxtWebContent::wantAll() const
 {
@@ -129,8 +131,11 @@ bool QxtWebContent::wantAll() const
 }
 
 /*!
- * Returns the total number of bytes of content expected. This will be -1
- * if the total content size is unknown.
+ * Returns the total number of bytes of content expected. This will be \bold -1
+ * if the total content size is unknown. This total includes both unread
+ * data and that which has not been received yet. To obtain the number of
+ * bytes available for reading, use bytesAvailable().
+ * \sa bytesNeeded(), wantAll()
  */
 qint64 QxtWebContent::unreadBytes() const
 {
@@ -141,8 +146,9 @@ qint64 QxtWebContent::unreadBytes() const
 
 /*!
  * Returns the number of bytes of content that have not yet been written
- * from the source device. This will be -1 if the total content size is
- * unknown.
+ * from the source device. This will be \bold -1 if the total content size is
+ * unknown and \bold zero once all data has been received from the source (the
+ * readChannelFinished() signal will be emitted when that occurs).
  */
 qint64 QxtWebContent::bytesNeeded() const
 {
@@ -154,12 +160,19 @@ qint64 QxtWebContent::bytesNeeded() const
  */
 qint64 QxtWebContent::writeData(const char *data, qint64 maxSize)
 {
-    if(!(openMode() & WriteOnly))
+    if(!(openMode() & WriteOnly)){
+	qWarning("QxtWebContent(): size=%lld but read-only", maxSize);
 	return -1; // Not accepting writes
+    }
     if(maxSize > 0) {
 	// This must match the QxtFifo implementation for consistency
         if(maxSize > INT_MAX) maxSize = INT_MAX; // qint64 could easily exceed QAtomicInt, so let's play it safe
 	if(qxt_d().bytesNeeded >= 0){
+	    if(maxSize > qxt_d().bytesNeeded){
+		qWarning("QxtWebContent(): size=%lld needed %lld", maxSize,
+			qxt_d().bytesNeeded);
+		maxSize = qxt_d().bytesNeeded;
+	    }
 	    qxt_d().bytesNeeded -= maxSize;
 	    Q_ASSERT(qxt_d().bytesNeeded >= 0);
 	}
@@ -182,11 +195,13 @@ void QxtWebContent::errorReceived(QAbstractSocket::SocketError)
 }
 
 /*!
- * Blocks until all of the streaming data has been read from the browser.
+ *  Blocks until all of the streaming data has been read from the browser.
  *
- * Note that this function will block events for the thread on which it is called.
- * If the main thread is blocked, QxtWeb will be unable to process additional
- * requests until the content has been received.
+ *  Note that this method effectively runs a tight event loop. Although it
+ *  will not block a thread's other activities, it may result in high CPU
+ *  consumption and cause performance problems. It is suggested that you
+ *  avoid use of this method and try to implement services using the
+ *  readChannelFinished() signal instead.
  */
 void QxtWebContent::waitForAllContent()
 {
@@ -207,10 +222,30 @@ void QxtWebContent::waitForAllContent()
  */
 void QxtWebContent::ignoreRemainingContent()
 {
-    if (qxt_d().bytesNeeded <= 0) return;
+    if (qxt_d().bytesNeeded == 0) return;
     if(!qxt_d().ignoreRemaining){
 	qxt_d().ignoreRemaining = true;
 	qxt_d().bytesNeeded = 0;
+    }
+}
+
+/*!
+ *  \internal
+ *  This slot handles a disconnect notice from a source I/O device to handle
+ *  cases where the source size is unknown. The internal state is adjusted
+ *  ensuring a reader will unblock in waitForAllContent(). If unread
+ *  data is present, a readyRead() signal will be emitted.
+ *  The readChannelFinished() signal is emitted regardless.
+ */
+void QxtWebContent::sourceDisconnect()
+{
+    if (qxt_d().bytesNeeded == 0) return;
+    if(!qxt_d().ignoreRemaining){
+	qxt_d().ignoreRemaining = true;
+	qxt_d().bytesNeeded = 0;
+	if(bytesAvailable() != 0)
+	    QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "readChannelFinished", Qt::QueuedConnection);
     }
 }
 
@@ -219,8 +254,11 @@ typedef QPair<QString, QString> QxtQueryItem;
 #endif
 
 /*!
- * Extracts the key/value pairs from application/x-www-form-urlencoded \a data,
- * such as the query string from the URL or the form data from a POST request.
+ *  Parses URL-encoded form data
+ *
+ *  Extracts the key/value pairs from \bold application/x-www-form-urlencoded
+ *  \a data, such as the query string from the URL or the form data from a
+ *  POST request.
  */
 QHash<QString, QString> QxtWebContent::parseUrlEncodedQuery(const QString& data)
 {

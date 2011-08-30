@@ -422,7 +422,10 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
     event->headers.insert("X-Request-Protocol", "HTTP/" + QString::number(state.httpMajorVersion) + '.' + QString::number(state.httpMinorVersion));
     if (sessionID && session(sessionID))
     {
-        session(sessionID)->pageRequestedEvent(event);
+	QxtAbstractWebService *service = session(sessionID);
+	if(content)
+	    content->setParent(service); // Set content ownership to the service
+        service->pageRequestedEvent(event);
     }
     else if (qxt_d().staticService)
     {

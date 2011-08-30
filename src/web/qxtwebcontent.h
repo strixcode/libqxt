@@ -56,6 +56,7 @@ protected:
     virtual qint64 writeData(const char* data, qint64 maxSize);
 
 private Q_SLOTS:
+    void sourceDisconnect();
     void errorReceived(QAbstractSocket::SocketError);
 
 private:

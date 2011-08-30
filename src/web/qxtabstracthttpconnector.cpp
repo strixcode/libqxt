@@ -201,8 +201,9 @@ void QxtAbstractHttpConnector::incomingData(QIODevice* device)
 		start = buffer.left(len);
 		buffer = buffer.mid(len);
 		content = new QxtWebContent(start, this);
-		QMetaObject::invokeMethod(this, "incomingData",
-			Qt::QueuedConnection, Q_ARG(QIODevice*, device));
+		if(buffer.size() > 0)
+		    QMetaObject::invokeMethod(this, "incomingData",
+			    Qt::QueuedConnection, Q_ARG(QIODevice*, device));
 	    }
 	    else{
 		// This request isn't finished yet but may still have one to
