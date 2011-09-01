@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Package name & version information
+#
+PKG_NAME=libqxt
+PKG_VERSION=0.7.0
+PKG_RELEASE=1

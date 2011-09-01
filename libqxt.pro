@@ -117,5 +117,13 @@ unix {
 
     coverage.depends += first cov_zerocounters runtests cov_capture cov_genhtml
     QMAKE_EXTRA_TARGETS += coverage
+
+    rpm.depends += clean
+    rpm.commands += cd packages && $(MAKE) rpm
+    QMAKE_EXTRA_TARGETS += rpm
+
+    deb.depends += clean
+    deb.commands += cd packages && $(MAKE) deb
+    QMAKE_EXTRA_TARGETS += deb
 }
 

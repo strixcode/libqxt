@@ -1,0 +1,14 @@
+#
+# Files installed by libqxt-dev (Development) package
+#
+
+# Headers
+usr/include/qxt/
+
+# Qt4 designer & build specs
+usr/lib/qt4/plugins/designer/*
+usr/share/qt4/mkspecs/*
+
+# Examples & documentation
+usr/share/qxt/doc/html/
+usr/share/qxt/examples/

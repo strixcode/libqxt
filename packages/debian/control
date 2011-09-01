@@ -1,0 +1,34 @@
+Source: libqxt
+Section: libraries
+Priority: optional
+Maintainer: L. Dee Holtsclaw <dholtsclaw@libqxt.org>
+Uploaders: Adam Hiegard <ahiegard@libqxt.org>
+Build-Depends: libqt4-dev, libssl-dev, autotools-dev
+Standards-Version: 3.7.2
+
+Package: libqxt-libs
+Section: libraries
+Architecture: any
+Priority: required
+Depends: ${shlibs:Depends}, libqt4
+Description: LibQxt libraries
+ This package supplies the Qxt libraries. It is needed for any application
+ which uses LibQxt.
+
+Package: libqxt-dev
+Section: devel
+Architecture: any
+Priority: optional
+Depends: ${shlibs:Depends}, libqxt-libs (= ${Source-Version})
+Suggests: libqxt-dbg (= ${Source-Version})
+Description: LibQxt development files
+ This package supplies headers, examples and documentation for the Qxt
+ libraries. Install this to develop applications with Qxt.
+
+Package: libqxt-dbg
+Section: devel
+Architecture: any
+Priority: extra
+Depends: libqxt-libs (= ${Source-Version}), gdb
+Enhances: libqxt-dev (= ${Source-Version})
+Description: Debugging symbols for LibQxt binaries

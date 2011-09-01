@@ -1,0 +1,11 @@
+#
+# Files installed by libs package
+#
+
+# Libraries
+usr/lib/qxt/libQxt*.so*
+usr/share/qxt/doc/AUTHORS
+usr/share/qxt/doc/CHANGES
+usr/share/qxt/doc/*.txt
+usr/share/qxt/doc/LICENSE
+usr/share/qxt/doc/README
