@@ -1,8 +1,8 @@
 Source: libqxt
 Section: libraries
 Priority: optional
-Maintainer: L. Dee Holtsclaw <dholtsclaw@libqxt.org>
-Uploaders: Adam Hiegard <ahiegard@libqxt.org>
+Maintainer: L. Dee Holtsclaw <dee@deetour.me>
+Uploaders: Adam Higerd <ahigerd@libqxt.org>
 Build-Depends: libqt4-dev, libssl-dev, autotools-dev
 Standards-Version: 3.7.2
 
