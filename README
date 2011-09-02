@@ -37,3 +37,16 @@
 	          Most of the times you have also to include the QxtCore and QxtKit modules.
 	          It's done the same way like the example above.
 
+==============================================================================
+
+Building packages (Linux/Unix - experimental):
+
+To build packages for Redhat or Debian based distributions, you can utilize
+the "rpm" or "deb" make targets. Perform the configure as outlined above,
+edit the "config" file in the packages subdirectory if needed and then type
+"make rpm" or "make deb" as appropriate. This will also perform a "make clean"
+to avoid copying files which will be rebuilt anyway.
+
+For RPM packages, you will need a standard .rpmmacros file in your home
+directory. A sample file, "rpmmacros-sample", is contained in the packages
+directory and must be edited for your environment before use.

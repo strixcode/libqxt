@@ -28,6 +28,7 @@
 
 #include <qxtglobal.h>
 #include <QAbstractProxyModel>
+#include <QPersistentModelIndex>
 
 class QxtMultiRootProxyModelPrivate;
 class QxtMultiRootProxyModel : public QAbstractProxyModel
@@ -36,7 +37,8 @@ Q_OBJECT
 public:
     QxtMultiRootProxyModel(QObject* parent = 0);
 
-    QModelIndexList roots() const;
+    QList<QPersistentModelIndex> roots() const;
+    void setRoots(const QList<QPersistentModelIndex>& roots);
     void setRoots(const QModelIndexList& roots);
 
     void setSourceModel(QAbstractItemModel* model);

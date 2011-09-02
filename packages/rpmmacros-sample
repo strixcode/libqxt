@@ -1,0 +1,32 @@
+#
+# Sample .rpmmacros file -- copy this to your home directory with that name
+#
+# The packager, distribution & vendor may be edited as appropriate. To sign
+# packages, you must generate a GPG key, edit the "_gpg_name" setting to
+# match the key verbatim and remove the hash from those 3 lines. Before
+# packages may be installed, the target machines will need the public key
+# installed into rpm using "rpm --import <public-key-file>". This is usually
+# included in a repository configuration/versioning package (rpmforge-release
+# is a good example) and installed with GPG checking disabled to "bootstrap"
+# the repository. The naming convention for keys is RPM-GPG-KEY.<distribution>
+# and typically installed in the /etc/pki/rpm-gpg directory.
+#
+%packager       John Doe <john@doe.com>
+
+%distribution   Doe RedHat builds
+%vendor         Qxt Foundation  http://libqxt.org
+%dist .el5
+%rhel 5
+#%_signature gpg
+#%_gpg_path ~/.gnupg
+#%_gpg_name John Doe (RPM signing key) <security@doe.com>
+%_smp_mflags -j2
+
+%_tmppath       /tmp/
+
+%_rpmtopdir     %{_topdir}/rpm/
+%_builddir      %{_tmppath}
+%_rpmdir        %{_rpmtopdir}RPMS/
+%_sourcedir     %{_rpmtopdir}SOURCES/
+%_specdir       %{_rpmtopdir}SPECS/
+%_srcrpmdir     %{_rpmtopdir}SRPMS/

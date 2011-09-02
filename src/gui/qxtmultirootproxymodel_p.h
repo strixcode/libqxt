@@ -35,8 +35,8 @@ public:
     QxtMultiRootProxyModelPrivate();
     QXT_DECLARE_PUBLIC(QxtMultiRootProxyModel);
 
-    QModelIndexList roots;
-    mutable QList<QModelIndex> parents;
+    QList<QPersistentModelIndex> roots;
+    mutable QList<QPersistentModelIndex> parents;
 
     QModelIndexList mapAllFromSource(const QModelIndex& index) const;
 

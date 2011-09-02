@@ -220,7 +220,7 @@ void QxtMultiRootProxyModel::setSourceModel(QAbstractItemModel* model)
 
   \sa setRoots
   */
-QModelIndexList QxtMultiRootProxyModel::roots() const
+QList<QPersistentModelIndex> QxtMultiRootProxyModel::roots() const
 {
     return qxt_d().roots;
 }
@@ -232,11 +232,27 @@ QModelIndexList QxtMultiRootProxyModel::roots() const
 
   \sa roots
   */
-void QxtMultiRootProxyModel::setRoots(const QModelIndexList& roots)
+void QxtMultiRootProxyModel::setRoots(const QList<QPersistentModelIndex>& roots)
 {
     beginResetModel();
     qxt_d().roots = roots;
     endResetModel();
+}
+
+/*!
+  \overload
+  Sets the list of roots used by the proxy model.
+
+  Each specified root will appear as a top-level entry in the proxy model.
+
+  \sa roots
+  */
+void QxtMultiRootProxyModel::setRoots(const QModelIndexList& roots)
+{
+    QList<QPersistentModelIndex> pRoots;
+    foreach(const QModelIndex& root, roots)
+        pRoots << QPersistentModelIndex(root);
+    setRoots(pRoots);
 }
 
 /*!
