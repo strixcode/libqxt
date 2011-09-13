@@ -6,7 +6,7 @@ Summary:    Qxt extention library for Qt 4.x
 Version:    @VERSION@
 Release:    %{_release}%{?dist}
 Group:	    System Environment/Libraries
-License:    CPL or LGPLv2
+License:    BSD
 Buildroot:  %{_tmppath}/%{name}-root
 URL:	    http://www.libqxt.org
 Source0:    %{name}-%{version}.tar.bz2

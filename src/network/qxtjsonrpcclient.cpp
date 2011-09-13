@@ -1,4 +1,3 @@
-/*!
 /****************************************************************************
 ** Copyright (c) 2006 - 2011, the LibQxt project.
 ** See the Qxt AUTHORS file for a list of authors and copyright holders.
@@ -29,6 +28,7 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
+/*!
     \class QxtJSONRpcClient
     \inmodule QxtNetwork
     \brief The QxtJSONRpcClient class implements a JSON-RPC Client.
