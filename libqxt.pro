@@ -40,7 +40,9 @@ contains( QXT_MODULES, network ){
     message( building network module )
     sub_network.subdir = src/network
     sub_network.depends = sub_core
-    SUBDIRS += sub_network
+    sub_jsonrpc.subdir = examples/jsonrpcclient
+    sub_jsonrpc.depends = sub_network
+    SUBDIRS += sub_network sub_jsonrpc
 }
 
 contains( QXT_MODULES, sql ){

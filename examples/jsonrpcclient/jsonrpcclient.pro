@@ -1,7 +1,10 @@
 TEMPLATE = app
-TARGET = 
+TARGET = qxtjsonrpc
+DESTDIR = ../../bin
 DEPENDPATH += .
 INCLUDEPATH += .
 SOURCES += main.cpp
 CONFIG+=qxt console
 QXT=core network
+INSTALLS += target
+target.path = $${QXT_INSTALL_BINS}
