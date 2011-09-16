@@ -63,86 +63,107 @@ QString QxtJSON::stringify(QVariant v){
     if (v.isNull()){
         return "null";
     }
-    int t = v.type();
-    if (t == QVariant::String){
-        QString in = v.toString();
-        QString out;
-        for(QString::ConstIterator i = in.constBegin(); i != in.constEnd(); i++){
-            if( (*i) == QChar('\b'))
-                out.append("\\b");
-            else if( (*i) == QChar('\f'))
-                out.append("\\f");
-            else if( (*i) == QChar('\n'))
-                out.append("\\n");
-            else if( (*i) == QChar('\r'))
-                out.append("\\r");
-            else if( (*i) == QChar('\t'))
-                out.append("\\t");
-            else if( (*i) == QChar('\f'))
-                out.append("\\f");
-            else if( (*i) == QChar('\\'))
-                out.append("\\\\");
-            else if( (*i) == QChar('/'))
-                out.append("\\/");
-            else
-                out.append(*i);
-        }
-        return "\""+out+"\"";
-    }
-    else if (t == QVariant::Bool){
-        return v.toBool()?"true":"false";
-    }else if (t ==  QVariant::Int){
-        return QString::number(v.toInt());
-    }else if (t ==  QVariant::Double){
-        return QString::number(v.toDouble());
-    }else if (t == QVariant::Map){
-        QString r="{";
-        QMap<QString, QVariant> map = v.toMap();
-        QMapIterator<QString, QVariant> i(map);
-        while (i.hasNext()){
-            i.next();
-            r+="\""+i.key()+"\":"+stringify(i.value())+",";
-        }
-        if(r.length()>1)
-            r.chop(1);
-        r+="}";
-        return r;
+    switch (v.type()) {
+        case QVariant::Bool:
+            return v.toBool()?"true":"false";
+            break;
+        case QVariant::ULongLong:
+        case QVariant::UInt:
+            return QString::number(v.toULongLong());
+            break;
+        case QVariant::LongLong:
+        case QVariant::Int:
+            return QString::number(v.toLongLong());
+            break;
+        case QVariant::Double:
+            return QString::number(v.toDouble());
+            break;
+        case QVariant::Map:
+            {
+                QString r="{";
+                QMap<QString, QVariant> map = v.toMap();
+                QMapIterator<QString, QVariant> i(map);
+                while (i.hasNext()){
+                    i.next();
+                    r+="\""+i.key()+"\":"+stringify(i.value())+",";
+                }
+                if(r.length()>1)
+                    r.chop(1);
+                r+="}";
+                return r;
+            }
+            break;
 #if QT_VERSION >= 0x040500
-    }else if (t == QVariant::Hash){
-        QString r="{";
-        QHash<QString, QVariant> map = v.toHash();
-        QHashIterator<QString, QVariant> i(map);
-        while (i.hasNext()){
-            i.next();
-            r+="\""+i.key()+"\":"+stringify(i.value())+",";
-        }
-        if(r.length()>1)
-            r.chop(1);
-        r+="}";
-        return r;
+        case QVariant::Hash:
+            {
+                QString r="{";
+                QHash<QString, QVariant> map = v.toHash();
+                QHashIterator<QString, QVariant> i(map);
+                while (i.hasNext()){
+                    i.next();
+                    r+="\""+i.key()+"\":"+stringify(i.value())+",";
+                }
+                if(r.length()>1)
+                    r.chop(1);
+                r+="}";
+                return r;
+            }
+            break;
 #endif
-    }else if (t == QVariant::StringList){
-        QString r="[";
-        QStringList l = v.toStringList();
-        foreach(QString i, l){
-            r+="\""+i+"\",";
-        }
-        if(r.length()>1)
-            r.chop(1);
-        r+="]";
-        return r;
-    }else if (t == QVariant::List){
-        QString r="[";
-        QVariantList l = v.toList();
-        foreach(QVariant i, l){
-            r+=stringify(i)+",";
-        }
-        if(r.length()>1)
-            r.chop(1);
-        r+="]";
-        return r;
+        case QVariant::StringList:
+            {
+                QString r="[";
+                QStringList l = v.toStringList();
+                foreach(QString i, l){
+                    r+="\""+i+"\",";
+                }
+                if(r.length()>1)
+                    r.chop(1);
+                r+="]";
+                return r;
+            }
+        case QVariant::List:
+            {
+                QString r="[";
+                QVariantList l = v.toList();
+                foreach(QVariant i, l){
+                    r+=stringify(i)+",";
+                }
+                if(r.length()>1)
+                    r.chop(1);
+                r+="]";
+                return r;
+            }
+            break;
+        case QVariant::String:
+        default:
+            {
+                QString in = v.toString();
+                QString out;
+                for(QString::ConstIterator i = in.constBegin(); i != in.constEnd(); i++){
+                    if( (*i) == QChar('\b'))
+                        out.append("\\b");
+                    else if( (*i) == QChar('\f'))
+                        out.append("\\f");
+                    else if( (*i) == QChar('\n'))
+                        out.append("\\n");
+                    else if( (*i) == QChar('\r'))
+                        out.append("\\r");
+                    else if( (*i) == QChar('\t'))
+                        out.append("\\t");
+                    else if( (*i) == QChar('\f'))
+                        out.append("\\f");
+                    else if( (*i) == QChar('\\'))
+                        out.append("\\\\");
+                    else if( (*i) == QChar('/'))
+                        out.append("\\/");
+                    else
+                        out.append(*i);
+                }
+                return "\""+out+"\"";
+            }
+            break;
     }
-
     return QString();
 }
 
