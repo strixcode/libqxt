@@ -35,7 +35,6 @@
 #include "qxtabstractwebservice.h"
 #include <QUrl>
 
-
 class QXT_WEB_EXPORT QxtWebJsonRPCService : public QxtAbstractWebService
 {
     Q_OBJECT
@@ -44,6 +43,8 @@ public:
     virtual ~QxtWebJsonRPCService();
 
 protected:
+    void throwRPCError(QVariant error);
+
     QUrl self(QxtWebRequestEvent* event);
     virtual void pageRequestedEvent(QxtWebRequestEvent* event);
     virtual void functionInvokedEvent(QxtWebRequestEvent* event);

@@ -104,6 +104,7 @@ void QxtWebJsonRPCService::Private::readFinished()
 void QxtWebJsonRPCService::Private::handle(QxtWebContent *c)
 {
     QxtWebRequestEvent *event = content.take(c);
+    currentRequest = 0;
     c->ignoreRemainingContent();
 
     QString data = QString::fromUtf8(c->readAll());
@@ -143,6 +144,9 @@ void QxtWebJsonRPCService::Private::handle(QxtWebContent *c)
     }
 
     QVariant returnValue;
+    currentRequest = event;
+    currentRequestId = rid;
+    requestCanceled = false;
 
     Method method = methods.value(action.toUtf8() + QByteArray::number(args.count()));
     bool ok = false;
@@ -364,6 +368,9 @@ void QxtWebJsonRPCService::Private::handle(QxtWebContent *c)
         p->postEvent(err);
         return;
     }
+    if (requestCanceled) {
+        return;
+    }
 
     QVariantMap res;
     res.insert("result", returnValue);
@@ -388,6 +395,29 @@ QxtWebJsonRPCService::QxtWebJsonRPCService(QxtAbstractWebSessionManager* sm, QOb
 QxtWebJsonRPCService::~QxtWebJsonRPCService()
 {
     delete d;
+}
+
+/*!
+ * respond to the current request with an error.
+ *
+ * The return value of the current slot is NOT used.
+ * Instead null is returned, adhering to the jsonrpc specificaiton.
+ *
+ * Calling this function from somewhere else then a handler slot is undefined behaviour.
+ */
+
+void QxtWebJsonRPCService::throwRPCError(QVariant error)
+{
+    d->requestCanceled= true;
+    QxtWebRequestEvent *event = d->currentRequest;
+
+    QVariantMap res;
+    res.insert("result", QVariant());
+    res.insert("error", error);
+    res.insert("id", d->currentRequestId);
+    QxtWebPageEvent *err = new QxtWebPageEvent(event->sessionID, event->requestID,
+            QxtJSON::stringify(res).toUtf8() + "\r\n");
+    postEvent(err);
 }
 
 /*!

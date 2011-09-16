@@ -54,6 +54,10 @@ public:
     };
     QMap<QByteArray, Method> methods;
 
+    QxtWebRequestEvent *currentRequest;
+    QVariant currentRequestId;
+    bool requestCanceled;
+
 public slots:
     void readFinished();
     void handle(QxtWebContent *);
