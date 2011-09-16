@@ -41,5 +41,6 @@
 #include "qxtwebevent.h"
 #include "qxtwebservicedirectory.h"
 #include "qxtwebslotservice.h"
+#include "qxtwebjsonrpcservice.h"
 
 #endif // QXTWEB_H_INCLUDED

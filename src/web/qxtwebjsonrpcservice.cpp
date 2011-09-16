@@ -417,6 +417,18 @@ QUrl QxtWebJsonRPCService::self(QxtWebRequestEvent* event)
  */
 void QxtWebJsonRPCService::pageRequestedEvent(QxtWebRequestEvent* event)
 {
+    if (!event->content) {
+        QVariantMap res;
+        res.insert("result", QVariant());
+        res.insert("error", "missing POST data");
+        res.insert("id", QVariant());
+        QxtWebPageEvent *err = new QxtWebPageEvent(event->sessionID, event->requestID,
+                QxtJSON::stringify(res).toUtf8() + "\r\n");
+        err->status = 500;
+        postEvent(err);
+        return;
+    }
+
     d->content.insert(event->content, event);
     if (event->content->bytesNeeded() == 0) {
         d->handle(event->content);
