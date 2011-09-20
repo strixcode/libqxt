@@ -1,4 +1,3 @@
-#ifndef QXTWEB_H_INCLUDED
 /****************************************************************************
 ** Copyright (c) 2006 - 2011, the LibQxt project.
 ** See the Qxt AUTHORS file for a list of authors and copyright holders.
@@ -29,19 +28,31 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
-#define QXTWEB_H_INCLUDED
-
-#include "qxtabstracthttpconnector.h"
-#include "qxtabstractwebservice.h"
-#include "qxtabstractwebsessionmanager.h"
-#include "qxthtmltemplate.h"
-#include "qxthttpsessionmanager.h"
-#include "qxtwebcgiservice.h"
-#include "qxtwebcontent.h"
-#include "qxtwebevent.h"
-#include "qxtwebjsonrpcservice.h"
 #include "qxtwebjstemplate.h"
-#include "qxtwebservicedirectory.h"
-#include "qxtwebslotservice.h"
+#include <QtScript/QScriptEngine>
+#include <QtScript/QScriptProgram>
+#include <QtScript/QScriptValue>
 
-#endif // QXTWEB_H_INCLUDED
+class QxtWebJsTemplatePrivate : public QObject
+{
+Q_OBJECT
+public:
+    QScriptProgram program;
+    QScriptEngine *engine;
+    QString result;
+    QString fileName;
+
+    Q_SCRIPTABLE void print(QString p)
+    {
+        result.append(p);
+    }
+    QByteArray handleCode(QByteArray codeType, QByteArray code)
+    {
+        if (codeType == "=") {
+            code = "print (" + code  +");";
+        }
+        return "'); " + code + " print ('";
+    }
+
+};
+

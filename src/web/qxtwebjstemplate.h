@@ -1,4 +1,3 @@
-#ifndef QXTWEB_H_INCLUDED
 /****************************************************************************
 ** Copyright (c) 2006 - 2011, the LibQxt project.
 ** See the Qxt AUTHORS file for a list of authors and copyright holders.
@@ -29,19 +28,26 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
-#define QXTWEB_H_INCLUDED
+#ifndef QXTWEBJSTEMPLATE_H
+#define QXTWEBJSTEMPLATE_H
 
-#include "qxtabstracthttpconnector.h"
-#include "qxtabstractwebservice.h"
-#include "qxtabstractwebsessionmanager.h"
-#include "qxthtmltemplate.h"
-#include "qxthttpsessionmanager.h"
-#include "qxtwebcgiservice.h"
-#include "qxtwebcontent.h"
-#include "qxtwebevent.h"
-#include "qxtwebjsonrpcservice.h"
-#include "qxtwebjstemplate.h"
-#include "qxtwebservicedirectory.h"
-#include "qxtwebslotservice.h"
+#include <QtCore/QObject>
+#include <QtCore/QString>
 
-#endif // QXTWEB_H_INCLUDED
+#include <QtScript/QScriptProgram>
+
+class QScriptEngine;
+class QxtWebJsTemplatePrivate;
+class QxtWebJsTemplate : public QObject
+{
+Q_OBJECT
+public:
+    QxtWebJsTemplate(QScriptEngine *engine, QObject *parent = 0);
+    bool load(const QString &file);
+    QString evaluate();
+private:
+    QxtWebJsTemplatePrivate *d;
+};
+
+
+#endif
