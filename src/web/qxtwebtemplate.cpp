@@ -171,6 +171,10 @@ QxtWebTemplate::~QxtWebTemplate()
             }
         }
     }
+
+    foreach(QxtWebTemplate *t, d->others.values()) {
+        t->d->assignedTo.removeAll(this);
+    }
 }
 
 /*
