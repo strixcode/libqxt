@@ -61,5 +61,6 @@ public:
 public slots:
     void readFinished();
     void handle(QxtWebContent *);
+    void handle( QxtWebRequestEvent *event, QVariant id, QString method, QVariant args);
 };
 
