@@ -303,7 +303,7 @@ QString QxtWebTemplate::evaluate()
 void QxtWebTemplate::assign(const QString &property, const QVariant &value)
 {
     d->engine->globalObject().setProperty(property,
-            d->engine->newVariant (value));
+            qScriptValueFromValue(d->engine,value));
 }
 
 /*
