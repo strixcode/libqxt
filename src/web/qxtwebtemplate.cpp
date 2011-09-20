@@ -211,7 +211,13 @@ bool QxtWebTemplate::load(const QString &file)
                             codeType="=";
                             ++x;
                             break;
-                        } else if( *x == ' ' || *x == '\t' ) {
+                        } else if(
+                                *x == ' ' ||
+                                *x == '\t' ||
+                                *x == '\n' ||
+                                *x == '\r' ||
+                                *x == '\v'
+                                ) {
                             break;
                         }
                         codeType.append(*x);
