@@ -40,8 +40,8 @@
 #include "qxtwebcontent.h"
 #include "qxtwebevent.h"
 #include "qxtwebjsonrpcservice.h"
-#include "qxtwebjstemplate.h"
 #include "qxtwebservicedirectory.h"
 #include "qxtwebslotservice.h"
+#include "qxtwebtemplate.h"
 
 #endif // QXTWEB_H_INCLUDED

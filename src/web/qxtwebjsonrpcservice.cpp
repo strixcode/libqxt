@@ -28,45 +28,35 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
-
 /*!
-\class QxtWebJSTemplate
+\class QxtWebJsonRPCService
 
 \inmodule QxtWeb
 
-\brief The QxtWebJSTemplate is an template engine that allows embedding javascript into any text
+\brief The QxtWebJsonRPCService class provides a Slot based webservice that responds to JSONRPC
 
+See http://json-rpc.org for details on the protocol
 
-Example usage:
+To create a Webservice, simply subclass QxtWebJsonRPCService. All slots are exposed as jsonrpc method
+
 \code
-QScriptEngine engine;
-engine.globalObject().setProperty("hello", 5);
-QxtWebJsTemplate t(&engine);
-t.load("index.html");
-qDebug() << t.evaluate();
+class MyService : public QxtWebJsonRPCService
+{
+Q_OBJECT
+public slots:
+    int add(int a, int b
+    {
+        return a +b;
+    }
+}
 \endcode
 
-index.html could look like the following:
 \code
-
-<html><body>
-<?js print(hello + 3); ?>
-</body></html>
-
+curl -d '{"method":"add", "id":1, "params": [9,2] }' localhost:1339
+{"error":null,"id":1,"result":11}
 \endcode
 
-everything within &lt;? ?&gt; will be interpreted as javascript.
-short form is also allowed:
-\code
-
-<html><body>
-<?=hello+3?>
-</body></html>
-
-\endcode
-
-
-
+\sa QxtAbstractWebService
 */
 
 #include "qxtwebjsonrpcservice_p.h"

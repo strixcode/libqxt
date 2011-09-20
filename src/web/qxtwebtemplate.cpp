@@ -28,56 +28,157 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
-
 /*!
-\class QxtWebJsonRPCService
+\class QxtWebTemplate
 
 \inmodule QxtWeb
 
-\brief The QxtWebJsonRPCService class provides a Slot based webservice that responds to JSONRPC
+\brief The QxtWebTemplate is an template engine that allows embedding javascript into any text
 
-See http://json-rpc.org for details on the protocol
-
-To create a Webservice, simply subclass QxtWebJsonRPCService. All slots are exposed as jsonrpc method
-
+Example usage:
 \code
-class MyService : public QxtWebJsonRPCService
-{
-Q_OBJECT
-public slots:
-    int add(int a, int b
-    {
-        return a +b;
-    }
-}
+QScriptEngine engine;
+engine.globalObject().setProperty("hello", 5);
+QxtWebJsTemplate t(&engine);
+t.load("index.html");
+qDebug() << t.evaluate();
 \endcode
 
+index.html could look like the following:
 \code
-curl -d '{"method":"add", "id":1, "params": [9,2] }' localhost:1339
-{"error":null,"id":1,"result":11}
+
+<html><body>
+<?js print(hello + 3); ?>
+</body></html>
+
 \endcode
 
-\sa QxtAbstractWebService
+everything within &lt;? ?&gt; will be interpreted as javascript.
+short form is also allowed:
+\code
+
+<html><body>
+<?=hello+3?>
+</body></html>
+
+\endcode
+
 */
 
-#include "qxtwebjstemplate_p.h"
+#include "qxtwebtemplate_p.h"
+#include "qxtabstractwebservice.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 #include <QtScript/QScriptEngine>
 #include <QtScript/QScriptProgram>
 #include <QtScript/QScriptValue>
+#include "qxtwebevent.h"
 
-QxtWebJsTemplate::QxtWebJsTemplate(QScriptEngine *engine, QObject *parent)
+
+/*! constructs a new QxtWebTemplate
+ *
+ * optionaly, pass the \p engine to use.
+ */
+QxtWebTemplate::QxtWebTemplate(QScriptEngine *engine, QObject *parent)
    : QObject(parent)
-   , d(new QxtWebJsTemplatePrivate)
+   , d(new QxtWebTemplatePrivate)
 
 {
     d->setParent(this);
+
+    if (engine == 0)
+        engine = new QScriptEngine(this);
+
     d->engine = engine;
+    d->service = 0;
+    d->event = 0;
 }
 
-bool QxtWebJsTemplate::load(const QString &file)
+/*! constructs a new QxtWebTemplate as RIAA post object
+ *
+ *  on deconstruction, QxtWebTemplate automaticly answers the passed QxtWebRequestEvent \p ev
+ *  unless release() is called before that.
+ *
+ *  example usage:
+ *
+ *  \code
+ * 
+ *  class Home : public QxtAbstractWebService
+ *  {
+ *     virtual void pageRequestedEvent(QxtWebRequestEvent* event)
+ *     {
+ *          QxtWebTemplate view(this, event);
+ *          view.load("home.html");
+ *          // deconstruction will automatically send home.html as reponse
+ *     }
+ *  };
+ * 
+ *  \endcode
+ *
+ *  note that the content will always be sent UTF-8 encoded, no matter what you set as \p contentType
+ *
+ * optionaly, pass the \p engine to use.
+ */
+QxtWebTemplate::QxtWebTemplate(QxtAbstractWebService *service,
+        QxtWebRequestEvent* ev, QByteArray contentType,
+        QScriptEngine *engine,QObject *parent)
+   : QObject(parent)
+   , d(new QxtWebTemplatePrivate)
+
+{
+    d->setParent(this);
+
+    if (engine == 0)
+        engine = new QScriptEngine(this);
+
+    d->engine = engine;
+    d->service = service;
+    d->event = ev;
+    d->contentType = contentType;
+}
+
+
+/*
+ * prevent sending a response on deconstruction
+ *
+ */
+void QxtWebTemplate::release()
+{
+    d->event = 0;
+}
+
+QxtWebTemplate::~QxtWebTemplate()
+{
+    QString res;
+    if ((d->service && d->event) || d->assignedTo.count()) {
+        res = evaluate();
+    }
+
+    if (d->service && d->event)
+    {
+        QxtWebPageEvent *answer = new QxtWebPageEvent(
+                d->event->sessionID, d->event->requestID,
+                res.toUtf8());
+        answer->contentType = d->contentType;
+        d->service->postEvent(answer);
+    }
+    if (d->assignedTo.count()) {
+        foreach(QxtWebTemplate *p , d->assignedTo) {
+            foreach (const QString &k, p->d->others.keys(this)) {
+                p->assign(k, res);
+                p->d->others.remove(k);
+            }
+        }
+    }
+}
+
+/*
+ * load the specified \p file as template
+ *
+ */
+
+bool QxtWebTemplate::load(const QString &file)
 {
     d->fileName = file;
     QFile f(file);
@@ -150,16 +251,29 @@ bool QxtWebJsTemplate::load(const QString &file)
     return true;
 }
 
-QString QxtWebJsTemplate::evaluate()
+/*
+ * return the content as utf8 encoded string
+ *
+ * */
+QString QxtWebTemplate::evaluate()
 {
     d->result.clear();
     QScriptValue sThis = d->engine->newQObject (d, QScriptEngine::QtOwnership);
 
-    QScriptValue oldPrint = d->engine->globalObject().property("print");
-    d->engine->globalObject().setProperty("print",sThis.property("print"));
+    QScriptValue go = d->engine->globalObject();
+
+    QScriptValue oldPrint = go.property("print");
+    go.setProperty("print",sThis.property("print"));
+
+
+    QMapIterator<QString, QxtWebTemplate *> i(d->others);
+    while (i.hasNext()) {
+        i.next();
+        go.setProperty(i.key(), i.value()->evaluate());
+    }
 
     QScriptValue r = d->engine->evaluate(d->program);
-    d->engine->globalObject().setProperty("print", oldPrint);
+    go.setProperty("print", oldPrint);
 
     if (d->engine->hasUncaughtException()) {
         d->result = d->fileName
@@ -169,4 +283,30 @@ QString QxtWebJsTemplate::evaluate()
     return d->result;
 }
 
+/*
+ * assign a value to a template variable
+ *
+ *
+ * note: this changes the QScriptEngine. If you passed an engine in the constructor, this will be modified
+ * */
+
+void QxtWebTemplate::assign(const QString &property, const QVariant &value)
+{
+    d->engine->globalObject().setProperty(property,
+            d->engine->newVariant (value));
+}
+
+/*
+ * assign another template to a template variable
+ *
+ * the assigned template will rendered when this one is rendered
+ *
+ * note: this changes the QScriptEngine. If you passed an engine in the constructor, this will be modified
+ * */
+
+void QxtWebTemplate::assign(const QString &property, QxtWebTemplate *t)
+{
+    d->others.insert(property, t);
+    t->d->assignedTo.append(this);
+}
 

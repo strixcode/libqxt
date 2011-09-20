@@ -37,16 +37,27 @@
 #include <QtScript/QScriptProgram>
 
 class QScriptEngine;
-class QxtWebJsTemplatePrivate;
-class QxtWebJsTemplate : public QObject
+class QxtWebTemplatePrivate;
+class QxtAbstractWebService;
+class QxtWebRequestEvent;
+class QxtWebTemplate : public QObject
 {
 Q_OBJECT
 public:
-    QxtWebJsTemplate(QScriptEngine *engine, QObject *parent = 0);
+    QxtWebTemplate(QScriptEngine *engine = 0, QObject *parent = 0);
+    QxtWebTemplate(QxtAbstractWebService *service, QxtWebRequestEvent* ev,
+            QByteArray contentType = "text/html; charset=utf-8",
+            QScriptEngine *engine = 0, QObject *parent = 0);
+    ~QxtWebTemplate();
     bool load(const QString &file);
     QString evaluate();
+    void release();
+
+    void assign(const QString &property, const QVariant &value);
+    void assign(const QString &property, QxtWebTemplate *t);
+
 private:
-    QxtWebJsTemplatePrivate *d;
+    QxtWebTemplatePrivate *d;
 };
 
 

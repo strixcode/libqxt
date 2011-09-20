@@ -28,15 +28,16 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
-#include "qxtwebjstemplate.h"
+#include "qxtwebtemplate.h"
 #include <QtScript/QScriptEngine>
 #include <QtScript/QScriptProgram>
 #include <QtScript/QScriptValue>
 
-class QxtWebJsTemplatePrivate : public QObject
+class QxtWebTemplatePrivate : public QObject
 {
 Q_OBJECT
 public:
+
     QScriptProgram program;
     QScriptEngine *engine;
     QString result;
@@ -54,5 +55,11 @@ public:
         return "'); " + code + " print ('";
     }
 
+    QxtAbstractWebService *service;
+    QxtWebRequestEvent *event;
+    QByteArray contentType;
+
+    QMap<QString, QxtWebTemplate *> others;
+    QList<QxtWebTemplate *> assignedTo;
 };
 
