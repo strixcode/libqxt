@@ -165,7 +165,7 @@ bool QxtDaemon::daemonize(bool pidfile)
     if (pidfile)
     {
         QFile f("/var/run/" + m_name + ".pid");
-        if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+        if (!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
             qFatal("cannot open pidfile \"/var/run/%s.pid\"", qPrintable(m_name));
         if (lockf(f.handle(), F_TEST, 0) < 0)
             qFatal("can't get a lock on \"/var/run/%s.pid\". another instance is propably already running.", qPrintable(m_name));
