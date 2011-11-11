@@ -691,7 +691,12 @@ void QxtRfc2822Parser::parseBody(QxtMailMessagePrivate* msg)
     {
         beginSecond = bndRe.pos() + bndRe.cap(1).length(); // add length of preceding line break, if any
         endSecond = bndRe.pos() + bndRe.matchedLength();
+#if QT_VERSION >= 0x040600
+        if (bndRe.captureCount() == 2 && bndRe.cap(2) == "--") last = true;
+#else
         if (bndRe.numCaptures() == 2 && bndRe.cap(2) == "--") last = true;
+#endif
+
 //        qDebug("found%s boundary delimiter at position %d.", last?" last":"", beginSecond);
 //        qDebug("%d captures", bndRe.numCaptures());
 //        foreach(QString capture, bndRe.capturedTexts())
