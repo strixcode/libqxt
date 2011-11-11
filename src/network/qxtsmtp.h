@@ -64,6 +64,13 @@ public:
         TransactionFailed
     };
 
+    enum AuthType
+    {
+        AuthPlain,
+        AuthLogin,
+        AuthCramMD5
+    };
+
     QxtSmtp(QObject* parent = 0);
 
     QByteArray username() const;
@@ -91,6 +98,9 @@ public:
 
     bool hasExtension(const QString& extension);
     QString extensionData(const QString& extension);
+
+    bool isAuthMethodEnabled(AuthType type) const;
+    void setAuthMethodEnabled(AuthType type, bool enable);
 
 Q_SIGNALS:
     void connected();

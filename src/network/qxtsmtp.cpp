@@ -48,7 +48,7 @@
 #    include <QSslSocket>
 #endif
 
-QxtSmtpPrivate::QxtSmtpPrivate() : QObject(0)
+QxtSmtpPrivate::QxtSmtpPrivate() : QObject(0), allowedAuthTypes(QxtSmtp::AuthPlain | QxtSmtp::AuthLogin | QxtSmtp::AuthCramMD5)
 {
     // empty ctor
 }
@@ -167,6 +167,19 @@ QString QxtSmtp::extensionData(const QString& extension)
     return qxt_d().extensions[extension];
 }
 
+bool QxtSmtp::isAuthMethodEnabled(AuthType type) const
+{
+    return qxt_d().allowedAuthTypes & type;
+}
+
+void QxtSmtp::setAuthMethodEnabled(AuthType type, bool enable)
+{
+    if(enable)
+        qxt_d().allowedAuthTypes |= type;
+    else
+        qxt_d().allowedAuthTypes &= ~type;
+}
+
 void QxtSmtpPrivate::socketError(QAbstractSocket::SocketError err)
 {
     if (err == QAbstractSocket::SslHandshakeFailedError)
@@ -223,8 +236,8 @@ void QxtSmtpPrivate::socketRead()
 #endif
         case AuthRequestSent:
         case AuthUsernameSent:
-            if (authType == AuthPlain) authPlain();
-            else if (authType == AuthLogin) authLogin();
+            if (authType == QxtSmtp::AuthPlain) authPlain();
+            else if (authType == QxtSmtp::AuthLogin) authLogin();
             else authCramMD5(line.mid(4));
             break;
         case AuthSent:
@@ -376,15 +389,15 @@ void QxtSmtpPrivate::authenticate()
     else
     {
         QStringList auth = extensions["AUTH"].toUpper().split(' ', QString::SkipEmptyParts);
-        if (auth.contains("CRAM-MD5"))
+        if (auth.contains("CRAM-MD5") && (allowedAuthTypes & QxtSmtp::AuthCramMD5))
         {
             authCramMD5();
         }
-        else if (auth.contains("PLAIN"))
+        else if (auth.contains("PLAIN") && (allowedAuthTypes & QxtSmtp::AuthPlain))
         {
             authPlain();
         }
-        else if (auth.contains("LOGIN"))
+        else if (auth.contains("LOGIN") && (allowedAuthTypes & QxtSmtp::AuthLogin))
         {
             authLogin();
         }
@@ -401,7 +414,7 @@ void QxtSmtpPrivate::authCramMD5(const QByteArray& challenge)
     if (state != AuthRequestSent)
     {
         socket->write("auth cram-md5\r\n");
-        authType = AuthCramMD5;
+        authType = QxtSmtp::AuthCramMD5;
         state = AuthRequestSent;
     }
     else
@@ -420,7 +433,7 @@ void QxtSmtpPrivate::authPlain()
     if (state != AuthRequestSent)
     {
         socket->write("auth plain\r\n");
-        authType = AuthPlain;
+        authType = QxtSmtp::AuthPlain;
         state = AuthRequestSent;
     }
     else
@@ -440,7 +453,7 @@ void QxtSmtpPrivate::authLogin()
     if (state != AuthRequestSent && state != AuthUsernameSent)
     {
         socket->write("auth login\r\n");
-        authType = AuthLogin;
+        authType = QxtSmtp::AuthLogin;
         state = AuthRequestSent;
     }
     else if (state == AuthRequestSent)

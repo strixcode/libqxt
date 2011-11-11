@@ -67,16 +67,10 @@ public:
         Resetting
     };
 
-    enum AuthType
-    {
-        AuthPlain,
-        AuthLogin,
-        AuthCramMD5
-    };
-
     bool useSecure, disableStartTLS;
-    SmtpState state;// rather then an int use the enum.  makes sure invalid states are entered at compile time, and makes debugging easier
-    AuthType authType;
+    SmtpState state; // rather then an int use the enum.  makes sure invalid states are entered at compile time, and makes debugging easier
+    QxtSmtp::AuthType authType;
+    int allowedAuthTypes;
     QByteArray buffer, username, password;
     QHash<QString, QString> extensions;
     QList<QPair<int, QxtMailMessage> > pending;
