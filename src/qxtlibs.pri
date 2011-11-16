@@ -8,7 +8,7 @@ defineTest(qxtAddLibrary) {
     INCLUDEPATH += $${QXT_SOURCE_TREE}/src/$$1
     INCLUDEPATH += $${QXT_SOURCE_TREE}/include/$$2
     DEPENDPATH += $${QXT_SOURCE_TREE}/src/$$1
-    DEPENTPATH += $${QXT_SOURCE_TREE}/include/$$2
+    DEPENDPATH += $${QXT_SOURCE_TREE}/include/$$2
     qtAddLibrary($$2)
 }
 
