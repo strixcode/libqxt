@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QTextStream>
 #include <QStringList>
-#include <QxtSignalWaiter>
+#include <QxtCore/QxtSignalWaiter>
 
 
 static const int inc = 2;
