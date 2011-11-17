@@ -33,6 +33,7 @@
 #include "qxtlanguagecombobox_p.h"
 #include <QDir>
 #include <QApplication>
+#include <QSet>
 
 class Language;
 typedef QList<Language> LanguageList;
@@ -42,7 +43,7 @@ static QStringList findQmFiles(const QString& pathToTranslations)
 {
     QDir dir(pathToTranslations);
     QStringList fileNames = dir.entryList(QStringList("*.qm"), QDir::Files, QDir::Name);
-
+    QSet<QString> found;
     QMutableStringListIterator i(fileNames);
     while (i.hasNext())
     {
@@ -50,8 +51,11 @@ static QStringList findQmFiles(const QString& pathToTranslations)
         int start = i.value().indexOf('_');
         int end = i.value().lastIndexOf('.');
         QString s = i.value().mid(start + 1, end - start - 1).toLower();
-
-        i.setValue(s);
+        if (found.contains(s))
+        {
+            i.setValue(s);
+            found.insert(s);
+        }
     }
 
     return fileNames;
