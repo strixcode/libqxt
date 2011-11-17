@@ -266,11 +266,12 @@ void QxtLanguageComboBoxPrivate::setCurrentLanguage(QLocale::Language language)
     QModelIndex start = _mModel->index(0, 1);
     QModelIndexList result = _mModel->match(start, Qt::DisplayRole, language, 1, Qt::MatchExactly);
     if (!result.isEmpty())
+    {
         qxt_p().setCurrentIndex(result.first().row());
+        handleLanguageChange();
+    }
 //   else
 //     qDebug() << "Cannot setCurrentLanguage: " << language << _mModel;
-
-    handleLanguageChange();
 }
 
 /*!
