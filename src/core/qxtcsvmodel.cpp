@@ -321,7 +321,7 @@ bool QxtCsvModel::insertColumn(int col, const QModelIndex& parent)
 bool QxtCsvModel::insertColumns(int col, int count, const QModelIndex& parent)
 {
     if (parent != QModelIndex() || col < 0) return false;
-    emit beginInsertColumns(parent, col, col + count);
+    beginInsertColumns(parent, col, col + count - 1);
     QxtCsvModelPrivate& d_ptr = qxt_d();
     if (col < columnCount())
     {
@@ -339,7 +339,7 @@ bool QxtCsvModel::insertColumns(int col, int count, const QModelIndex& parent)
     for (int i = 0;i < count;i++)
         d_ptr.header.insert(col, "");
     d_ptr.maxColumn += count;
-    emit endInsertColumns();
+    endInsertColumns();
     return true;
 }
 
