@@ -1,6 +1,41 @@
-LibQxt 0.6.1 contains improvements and bug fixes to the 0.6.x series. For more
+LibQxt 0.6.2 contains improvements and bug fixes to the 0.6.x series. For more
 details, see the documentation included in this package or online at
 http://docs.libqxt.org.
+
+0.6.2
+-----
+
+    * QxtWindowSystem:
+        - X11 implementation cleanup/overhaul
+        - Fixed #85 QxtWindowSystem::windowGeometry issue
+    * QxtSpanSlider: Improved span drawing on Mac
+    * QxtGlobalShortcut:
+        - Fixed #51 QxtGlobalShortcut doesn't send signal
+        - Fixed #131 QxtGlobalShortcutKey unregistered other's shortcut key by mistake
+    * QxtZeroconf: Fixed a bug in the custom AvahiPoll introduced by a timestamp wrap-around that accured just last week.
+    * QxtCrumbView:
+        - Don't render delegate for invalid indexes
+        - Remove unnecessary padding
+    * QxtDataStreamSignalSerializer:
+        - Handle incomplete length
+        - Added cast to eliminate a compiler warning
+    * QxtMailMessage:
+        - Fix some encoding issues, support explicit transfer encodings
+        - Handle lines with only one word
+    * QxtJSON:
+        - Add support for long long ints
+        - Handle control characters in QxtJSON::stringify
+        - Fix \u decoding
+        - Fixed a error in json parsing code. Nested arrays were incorrectly combined into one big array.
+    * Build system
+        - Various enhancements
+        - Fixed #130 DEPENTPATH = DEPENDPATH?
+    * QxtLogger: Fixed the incorrect association of log level string names to their enumerations
+    * QxtAbstractHttpConnector: remove request disconnected on (QHash)"requests"
+    * QxtWebContent: Fix comparison on size
+    * QxtLanguageBox:
+        - Fixed #124 QxtLanguageBox logic maybe bug
+        - Fixed #125 QxtLanguageBox improvment in logic
 
 0.6.1
 -----
