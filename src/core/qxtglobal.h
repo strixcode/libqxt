@@ -173,6 +173,14 @@ protected:
     {
         return *qxt_p_ptr;
     }
+    inline PUB* qxt_ptr()
+    {
+        return qxt_p_ptr;
+    }
+    inline const PUB* qxt_ptr() const
+    {
+        return qxt_p_ptr;
+    }
 
 private:
     PUB* qxt_p_ptr;
@@ -203,6 +211,14 @@ public:
     inline const PVT& operator()() const
     {
         return *static_cast<PVT*>(pvt);
+    }
+    inline PVT * operator->()
+    {
+	return static_cast<PVT*>(pvt);
+    }
+    inline const PVT * operator->() const
+    {
+	return static_cast<PVT*>(pvt);
     }
 private:
     QxtPrivateInterface(const QxtPrivateInterface&) { }
