@@ -8,6 +8,7 @@ contains(DEFINES,HAVE_DB):contains(QXT_MODULES, berkeley):SUBDIRS += berkeley
 contains(QXT_MODULES, gui) {
     !macx:SUBDIRS += displaysettings
     SUBDIRS += qxtflowview
+    SUBDIRS += qxtscheduleview
 }
 contains(QXT_MODULES, network):SUBDIRS += ircpeer jsonrpcclient pop3
 contains(QXT_MODULES, web):SUBDIRS += web
