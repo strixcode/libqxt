@@ -183,6 +183,20 @@ void QxtAbstractWebSessionManager::sessionDestroyed(int)
  * Session managers should not create sessions before start() is invoked.
  * Subclasses are encouraged to refrain from accepting connections until the
  * session manager is started.
+ *
+ * Returns true if the session was successfully started and false otherwise.
+ */
+
+/*!
+ * \fn virtual bool QxtAbstractWebSessionManager::shutdown()
+ * Stops the session manager.
+ *
+ * This method stops listening for new connections. Any active connections
+ * remain viable. It is permissible to start() the session again after a
+ * successful shutdown (to change ports for example).
+ *
+ * Returns true if the session was active (successfully shut down) and false
+ * otherwise.
  */
 
 /*!

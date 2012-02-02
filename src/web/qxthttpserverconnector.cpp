@@ -112,6 +112,26 @@ bool QxtHttpServerConnector::listen(const QHostAddress& iface, quint16 port)
 }
 
 /*!
+ * \reimp
+ */
+bool QxtHttpServerConnector::shutdown()
+{
+    if(qxt_d().server->isListening()){
+	qxt_d().server->close();
+	return true;
+    }
+    return false;
+}
+
+/*!
+ * \reimp
+ */
+quint16 QxtHttpServerConnector::serverPort() const
+{
+    return qxt_d().server->serverPort();
+}
+
+/*!
  * Returns the QTcpServer used by this QxtHttpServerConnector. Use this pointer
  * to adjust the maxPendingConnections or QNetworkProxy properties of the
  * server.

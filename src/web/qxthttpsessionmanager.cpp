@@ -129,12 +129,12 @@ QxtHttpSessionManager::QxtHttpSessionManager(QObject* parent) : QxtAbstractWebSe
 
 /*!
  * Returns the interface on which the session manager will listen for incoming connections.
- * \sa setInterface
+ * \sa setListenInterface()
  */
 QHostAddress QxtHttpSessionManager::listenInterface() const
-    {
-        return qxt_d().iface;
-    }
+{
+    return qxt_d().iface;
+}
 
 /*!
  * Sets the interface \a iface on which the session manager will listen for incoming
@@ -143,7 +143,7 @@ QHostAddress QxtHttpSessionManager::listenInterface() const
  * The default value is QHostAddress::Any, which will cause the session manager
  * to listen on all network interfaces.
  *
- * \sa QxtAbstractHttpConnector::listen
+ * \sa QxtAbstractHttpConnector::listen()
  */
 void QxtHttpSessionManager::setListenInterface(const QHostAddress& iface)
 {
@@ -151,8 +151,11 @@ void QxtHttpSessionManager::setListenInterface(const QHostAddress& iface)
 }
 
 /*!
- * Returns the port on which the session manager will listen for incoming connections.
- * \sa setInterface
+ * Returns the port on which the session manager is expected to listen for
+ * incoming connections. This is always whatever value was supplied in the
+ * last \ref setPort() and not neccessarily the port number actually being
+ * used.
+ * \sa setPort(), serverPort()
  */
 quint16 QxtHttpSessionManager::port() const
 {
@@ -160,17 +163,37 @@ quint16 QxtHttpSessionManager::port() const
 }
 
 /*!
- * Sets the \a port on which the session manager will listen for incoming connections.
+ * Sets the \a port on which the session manager should listen for incoming
+ * connections.
  *
  * The default value is to listen on port 80. This is an acceptable value when
  * using QxtHttpServerConnector, but it is not likely to be desirable for other
- * connectors.
+ * connectors. You may also use 0 to allow the network layer to dynamically
+ * assign a port number. In this case, the \ref serverPort() method will
+ * return the actual port assigned once the session has been successfully
+ * started.
  *
- * \sa port
+ * \note Setting the port number after the session has been started will
+ * have no effect unless it is shutdown and started again.
+ *
+ * \sa port(), serverPort()
  */
 void QxtHttpSessionManager::setPort(quint16 port)
 {
     qxt_d().port = port;
+}
+
+/*!
+ * Returns the port on which the session manager is listening for incoming
+ * connections. This will be 0 if the session manager has not been started
+ * or was shutdown.
+ * \sa setInterface(), setPort()
+ */
+quint16 QxtHttpSessionManager::serverPort() const
+{
+    if(qxt_d().connector)
+	return connector()->serverPort();
+    return 0;
 }
 
 /*!
@@ -183,6 +206,15 @@ bool QxtHttpSessionManager::start()
 }
 
 /*!
+ * \reimp
+ */
+bool QxtHttpSessionManager::shutdown()
+{
+    Q_ASSERT(qxt_d().connector);
+    return connector()->shutdown();
+}
+
+/*!
  * Returns the name of the HTTP cookie used to track sessions in the web browser.
  * \sa setSessionCookieName
  */
@@ -192,7 +224,8 @@ QByteArray QxtHttpSessionManager::sessionCookieName() const
 }
 
 /*!
- * Sets the \a name of the HTTP cookie used to track sessions in the web browser.
+ * Sets the \a name of the HTTP cookie used to track sessions in the web
+ * browser.
  *
  * The default value is "sessionID".
  *

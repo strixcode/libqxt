@@ -256,15 +256,43 @@ void QxtAbstractHttpConnector::disconnected()
 }
 
 /*!
+ *  Returns the current local server port assigned during binding. This will
+ *  be 0 if the connector isn't currently bound.
+ *
+ * \sa listen()
+ */
+quint16 QxtAbstractHttpConnector::serverPort() const
+{
+    return 0;
+}
+
+/*!
  * \fn virtual bool QxtAbstractHttpConnector::listen(const QHostAddress& interface, quint16 port)
  * Invoked by the session manager to indicate that the connector should listen
  * for incoming connections on the specified \a interface and \a port.
  *
  * If the interface is QHostAddress::Any, the server will listen on all network interfaces.
+ * If the port is explicitly set to 0, the socket system will assign a port
+ * in the dynamic range. In this case, the resulting port number may be
+ * obtained using the serverPort() method.
  *
  * Returns true on success, or false if the server could not begin listening.
  *
- * \sa addConnection(QIODevice*)
+ * \sa addConnection(), shutdown()
+ */
+
+/*!
+ * \fn virtual bool QxtAbstractHttpConnector::shutdown()
+ * Invoked by the session manager to indicate that the connector should close
+ * it's listener port and stop accepting new connections. A shutdown may be
+ * followed by a new listen (to switch ports or handle a change in the
+ * machine's IP address). Note that if dynamic port assignment was used, it
+ * will be necessary to explictly set the port back to 0 or a subsequent
+ * listen will attempt to reuse the prior port number.
+ *
+ * Returns true on success, or false if the server wasn't listening.
+ *
+ * \sa listen()
  */
 
 /*!

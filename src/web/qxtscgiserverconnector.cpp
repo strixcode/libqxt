@@ -77,6 +77,26 @@ bool QxtScgiServerConnector::listen(const QHostAddress& iface, quint16 port)
 }
 
 /*!
+ * \reimp
+ */
+bool QxtScgiServerConnector::shutdown()
+{
+    if(qxt_d().server->isListening()){
+	qxt_d().server->close();
+	return true;
+    }
+    return false;
+}
+
+/*!
+ * \reimp
+ */
+quint16 QxtScgiServerConnector::serverPort() const
+{
+    return qxt_d().server->serverPort();
+}
+
+/*!
  * \internal
  */
 void QxtScgiServerConnector::acceptConnection()

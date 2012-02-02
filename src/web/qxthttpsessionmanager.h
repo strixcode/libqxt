@@ -44,6 +44,11 @@ class QXT_WEB_EXPORT QxtHttpSessionManager : public QxtAbstractWebSessionManager
 {
     friend class QxtAbstractHttpConnector;
     Q_OBJECT
+    Q_PROPERTY(QHostAddress listenInterface READ listenInterface WRITE setListenInterface)
+    Q_PROPERTY(QByteArray sessionCookieName READ sessionCookieName WRITE setSessionCookieName)
+    Q_PROPERTY(quint16 port READ port WRITE setPort)
+    Q_PROPERTY(quint16 serverPort READ serverPort)
+    Q_PROPERTY(bool autoCreateSession READ autoCreateSession WRITE setAutoCreateSession)
 public:
     enum Connector { HttpServer, Scgi, Fcgi };
 
@@ -56,6 +61,8 @@ public:
 
     quint16 port() const;
     void setPort(quint16 port);
+
+    quint16 serverPort() const;
 
     QByteArray sessionCookieName() const;
     void setSessionCookieName(const QByteArray& name);
@@ -71,6 +78,7 @@ public:
     QxtAbstractHttpConnector* connector() const;
 
     virtual bool start();
+    virtual bool shutdown();
 
 protected:
     virtual void sessionDestroyed(int sessionID);

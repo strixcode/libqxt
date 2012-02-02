@@ -47,6 +47,7 @@ public:
     QxtAbstractWebSessionManager(QObject* parent = 0);
 
     virtual bool start() = 0;
+    virtual bool shutdown() = 0;
     virtual void postEvent(QxtWebEvent* event) = 0;
     void setServiceFactory(ServiceFactory* factory);
     ServiceFactory* serviceFactory() const;

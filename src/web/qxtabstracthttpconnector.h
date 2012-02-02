@@ -50,6 +50,8 @@ class QXT_WEB_EXPORT QxtAbstractHttpConnector : public QObject
 public:
     QxtAbstractHttpConnector(QObject* parent = 0);
     virtual bool listen(const QHostAddress& iface, quint16 port) = 0;
+    virtual bool shutdown() = 0;
+    virtual quint16 serverPort() const;
 
 protected:
     QxtHttpSessionManager* sessionManager() const;
@@ -76,6 +78,8 @@ class QXT_WEB_EXPORT QxtHttpServerConnector : public QxtAbstractHttpConnector
 public:
     QxtHttpServerConnector(QObject* parent = 0, QTcpServer* server = 0);
     virtual bool listen(const QHostAddress& iface, quint16 port = 80);
+    virtual bool shutdown();
+    virtual quint16 serverPort() const;
 
     QTcpServer* tcpServer() const;
 
@@ -114,6 +118,8 @@ class QXT_WEB_EXPORT QxtScgiServerConnector : public QxtAbstractHttpConnector
 public:
     QxtScgiServerConnector(QObject* parent = 0);
     virtual bool listen(const QHostAddress& iface, quint16 port);
+    virtual bool shutdown();
+    virtual quint16 serverPort() const;
 
 protected:
     virtual bool canParseRequest(const QByteArray& buffer);
@@ -134,6 +140,7 @@ Q_OBJECT
 public:
     QxtFcgiConnector(QObject* parent = 0);
     virtual bool listen(const QHostAddress& iface, quint16 port);
+    virtual bool shutdown();
 
 private:
     QXT_DECLARE_PRIVATE(QxtFcgiConnector)
