@@ -6,6 +6,7 @@ HEADERS += qxtdiscoverableservice_p.h
 HEADERS += qxtservicebrowser.h
 HEADERS += qxtservicebrowser_p.h
 HEADERS += qxtdiscoverableservicename.h
+HEADERS += qxtzeroconf.h
 
 SOURCES += qxtdiscoverableservice.cpp
 SOURCES += qxtservicebrowser.cpp
