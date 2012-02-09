@@ -47,11 +47,18 @@ public:
     {
         result.append(p);
     }
-    QByteArray handleCode(QByteArray codeType, QByteArray code)
+    QByteArray handleCode(QByteArray codeType, QByteArray code, int line)
     {
         if (codeType == "=") {
             code = "print (" + code  +");";
         }
+	else if(!line && codeType == "xml"){
+	    code.replace('\\', "\\\\");
+	    code.replace('\n', "\\n");
+	    code.replace('\r', "\\r");
+	    code.replace('\'', "\\'");
+	    return "<?xml"+code+"?>";
+	}
         return "'); " + code + " print ('";
     }
 

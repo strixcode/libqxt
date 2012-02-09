@@ -33,7 +33,7 @@
 
 \inmodule QxtWeb
 
-\brief The QxtWebTemplate is an template engine that allows embedding javascript into any text
+\brief The QxtWebTemplate class is an template engine that allows embedding JavaScript into any text
 
 Example usage:
 \code
@@ -53,8 +53,11 @@ index.html could look like the following:
 
 \endcode
 
-everything within &lt;? ?&gt; will be interpreted as javascript.
-short form is also allowed:
+Everything within <? ?> tags will be interpreted as JavaScript with one
+notable exception: if the first line contains <?xml ... ?>, it will be
+copied verbatim into the output.
+
+JavaScript short form is also allowed:
 \code
 
 <html><body>
@@ -76,9 +79,12 @@ short form is also allowed:
 #include "qxtwebevent.h"
 
 
-/*! constructs a new QxtWebTemplate
+/*! Constructs a new QxtWebTemplate
  *
- * optionaly, pass the \p engine to use.
+ *  A new QScriptEngine will be constructed if one is not supplied in \a engine.
+ *
+ *  \warning This class will modify the script engine if any of the assign()
+ *  methods are used.
  */
 QxtWebTemplate::QxtWebTemplate(QScriptEngine *engine, QObject *parent)
    : QObject(parent)
@@ -95,12 +101,20 @@ QxtWebTemplate::QxtWebTemplate(QScriptEngine *engine, QObject *parent)
     d->event = 0;
 }
 
-/*! constructs a new QxtWebTemplate as RIAA post object
+/*! Constructs a new QxtWebTemplate as RIAA post object.
  *
- *  on deconstruction, QxtWebTemplate automaticly answers the passed QxtWebRequestEvent \p ev
- *  unless release() is called before that.
+ *  This method of construction is well suited for templated responses to
+ *  web service queries. Upon deconstruction, QxtWebTemplate automatically
+ *  answers the passed QxtWebRequestEvent \a ev unless the release() method
+ *  is used first. The \a service and \a ev parameters must not be NULL.
+ *  Since this is QObject-based, a \a parent may also be specified for
+ *  objects created on the heap (via new).
  *
- *  example usage:
+ *  The normal content-type generated is <b>text/html; charset=\"utf-8\"</b>.
+ *  This may be overridden by supplying a value for \a contentType. A new
+ *  QScriptEngine will be constructed if one is not supplied in \a engine.
+ *
+ *  Example usage:
  *
  *  \code
  * 
@@ -116,12 +130,11 @@ QxtWebTemplate::QxtWebTemplate(QScriptEngine *engine, QObject *parent)
  * 
  *  \endcode
  *
- *  note that the content will always be sent UTF-8 encoded, no matter what you set as \p contentType
- *
- * optionaly, pass the \p engine to use.
+ *  \warning The content will always be sent UTF-8 encoded, no matter what has
+ *  been supplied for \a contentType.
  */
 QxtWebTemplate::QxtWebTemplate(QxtAbstractWebService *service,
-        QxtWebRequestEvent* ev, QByteArray contentType,
+        QxtWebRequestEvent *ev, QByteArray contentType,
         QScriptEngine *engine,QObject *parent)
    : QObject(parent)
    , d(new QxtWebTemplatePrivate)
@@ -139,8 +152,11 @@ QxtWebTemplate::QxtWebTemplate(QxtAbstractWebService *service,
 }
 
 
-/*
- * prevent sending a response on deconstruction
+/*!
+ *  Releases the QxtWebRequestEvent preventing automatic response upon
+ *  deconstruction. If the template wasn't constructed with an event,
+ *  this method does nothing. Invoking the method more than once does not
+ *  cause an error but doesn't accomplish anything either.
  *
  */
 void QxtWebTemplate::release()
@@ -148,6 +164,11 @@ void QxtWebTemplate::release()
     d->event = 0;
 }
 
+/*! Destroys the template and releases all resources. If the template was
+ *  constructed with a QxtWebRequestEvent (and release() was not invoked),
+ *  the evaluate() method is called internally and the result posted as
+ *  a QxtWebPageEvent using the supplied content-type.
+ */
 QxtWebTemplate::~QxtWebTemplate()
 {
     QString res;
@@ -177,9 +198,11 @@ QxtWebTemplate::~QxtWebTemplate()
     }
 }
 
-/*
- * load the specified \p file as template
- *
+/*!
+ *  Loads the specified \a file as the template source. Any pathname suitable
+ *  with the QFile class constructor is allowed, including resources.
+ *  Returns true if the file was successfully loaded and processed and false
+ *  otherwise (usually indicating the file did not exist).
  */
 
 bool QxtWebTemplate::load(const QString &file)
@@ -199,6 +222,7 @@ bool QxtWebTemplate::load(const QString &file)
     QByteArray codeType;
     QByteArray code;
 
+    int line = 0;
     while (x < end) {
         if (*x == '<') {
             if (x + 1 < end) {
@@ -229,7 +253,7 @@ bool QxtWebTemplate::load(const QString &file)
                             if (x + 1 < end) {
                                 ++x;
                                 if (*x == '>') {
-                                    data.append(d->handleCode(codeType, code));
+                                    data.append(d->handleCode(codeType, code, line));
                                     ++x;
                                     break;
                                 }
@@ -245,9 +269,12 @@ bool QxtWebTemplate::load(const QString &file)
             }
         }
 
-        if (*x == '\r') {
+	if (*x == '\\'){
+	    data.append("\\\\");
+	} else if (*x == '\r') {
             data.append("\\r");
         } else if (*x == '\n') {
+	    ++line;
             data.append("\\n");
         } else if (*x == '\'') {
             data.append("\\'");
@@ -261,10 +288,11 @@ bool QxtWebTemplate::load(const QString &file)
     return true;
 }
 
-/*
- * return the content as utf8 encoded string
+/*!
+ *  Evaluates the template returning the result as UTF-8 encoded text. This
+ *  method may be invoked as many times as desired.
  *
- * */
+ */
 QString QxtWebTemplate::evaluate()
 {
     d->result.clear();
@@ -286,6 +314,8 @@ QString QxtWebTemplate::evaluate()
     go.setProperty("print", oldPrint);
 
     if (d->engine->hasUncaughtException()) {
+	qWarning() << "QxtWebTemplate: Exception in evaluate"
+	    << d->fileName << ":" << d->engine->uncaughtException().toString();
         d->result = d->fileName
             + ": " + d->engine->uncaughtException().toString();
     }
@@ -293,30 +323,27 @@ QString QxtWebTemplate::evaluate()
     return d->result;
 }
 
-/*
- * assign a value to a template variable
+/*!
+ *  Assign a \a value to a template variable named \a property.
  *
- *
- * note: this changes the QScriptEngine. If you passed an engine in the constructor, this will be modified
- * */
-
+ *  \warning This directly updates the QScriptEngine. If you passed your own
+ *  engine in the constructor, it will be modified by this method.
+ */
 void QxtWebTemplate::assign(const QString &property, const QVariant &value)
 {
     d->engine->globalObject().setProperty(property,
             qScriptValueFromValue(d->engine,value));
 }
 
-/*
- * assign another template to a template variable
+/*!
+ *  Assign another template \a t to a template variable \a property. The
+ *  template so assigned will be rendered whenever this one is rendered.
  *
- * the assigned template will rendered when this one is rendered
- *
- * note: this changes the QScriptEngine. If you passed an engine in the constructor, this will be modified
- * */
-
+ *  \warning This directly updates the QScriptEngine. If you passed your own
+ *  engine in the constructor, it will be modified by this method.
+ */
 void QxtWebTemplate::assign(const QString &property, QxtWebTemplate *t)
 {
     d->others.insert(property, t);
     t->d->assignedTo.append(this);
 }
-
