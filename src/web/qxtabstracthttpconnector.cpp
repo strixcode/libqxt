@@ -126,7 +126,7 @@ void QxtAbstractHttpConnector::setSessionManager(QxtHttpSessionManager* manager)
 /*!
  * Returns the session manager into which the connector is installed.
  *
- * \sa QxtHttpSessionManager::setConnector
+ * \sa QxtHttpSessionManager::setConnector()
  */
 QxtHttpSessionManager* QxtAbstractHttpConnector::sessionManager() const
 {
@@ -257,7 +257,8 @@ void QxtAbstractHttpConnector::disconnected()
 
 /*!
  *  Returns the current local server port assigned during binding. This will
- *  be 0 if the connector isn't currently bound.
+ *  be 0 if the connector isn't currently bound or when a port number isn't
+ *  applicable to the connector in use.
  *
  * \sa listen()
  */
@@ -271,10 +272,11 @@ quint16 QxtAbstractHttpConnector::serverPort() const
  * Invoked by the session manager to indicate that the connector should listen
  * for incoming connections on the specified \a interface and \a port.
  *
- * If the interface is QHostAddress::Any, the server will listen on all network interfaces.
- * If the port is explicitly set to 0, the socket system will assign a port
- * in the dynamic range. In this case, the resulting port number may be
- * obtained using the serverPort() method.
+ * If the interface is QHostAddress::Any, the server will listen on all
+ * network interfaces.
+ * If the port is explicitly set to 0, the underlying network subsystem will
+ * assign a port in the dynamic range. In this case, the resulting port number
+ * may be obtained using the serverPort() method.
  *
  * Returns true on success, or false if the server could not begin listening.
  *
@@ -286,9 +288,7 @@ quint16 QxtAbstractHttpConnector::serverPort() const
  * Invoked by the session manager to indicate that the connector should close
  * it's listener port and stop accepting new connections. A shutdown may be
  * followed by a new listen (to switch ports or handle a change in the
- * machine's IP address). Note that if dynamic port assignment was used, it
- * will be necessary to explictly set the port back to 0 or a subsequent
- * listen will attempt to reuse the prior port number.
+ * machine's IP address).
  *
  * Returns true on success, or false if the server wasn't listening.
  *

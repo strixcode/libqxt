@@ -50,7 +50,7 @@ service, even one that only returns a more useful error message.
 QxtHttpSessionManager attempts to be thread-safe in accepting connections and
 posting events. It is reentrant for all other functionality.
 
-\sa QxtAbstractWebService
+\sa class QxtAbstractWebService
 */
 
 #include "qxthttpsessionmanager.h"
@@ -153,7 +153,7 @@ void QxtHttpSessionManager::setListenInterface(const QHostAddress& iface)
 /*!
  * Returns the port on which the session manager is expected to listen for
  * incoming connections. This is always whatever value was supplied in the
- * last \ref setPort() and not neccessarily the port number actually being
+ * last setPort() and not neccessarily the port number actually being
  * used.
  * \sa setPort(), serverPort()
  */
@@ -169,7 +169,7 @@ quint16 QxtHttpSessionManager::port() const
  * The default value is to listen on port 80. This is an acceptable value when
  * using QxtHttpServerConnector, but it is not likely to be desirable for other
  * connectors. You may also use 0 to allow the network layer to dynamically
- * assign a port number. In this case, the \ref serverPort() method will
+ * assign a port number. In this case, the serverPort() method will
  * return the actual port assigned once the session has been successfully
  * started.
  *
@@ -216,7 +216,7 @@ bool QxtHttpSessionManager::shutdown()
 
 /*!
  * Returns the name of the HTTP cookie used to track sessions in the web browser.
- * \sa setSessionCookieName
+ * \sa setSessionCookieName()
  */
 QByteArray QxtHttpSessionManager::sessionCookieName() const
 {
@@ -229,7 +229,7 @@ QByteArray QxtHttpSessionManager::sessionCookieName() const
  *
  * The default value is "sessionID".
  *
- * \sa sessionCookieName
+ * \sa sessionCookieName()
  */
 void QxtHttpSessionManager::setSessionCookieName(const QByteArray& name)
 {
@@ -239,7 +239,7 @@ void QxtHttpSessionManager::setSessionCookieName(const QByteArray& name)
 /*!
  * Sets the \a connector used to manage connections to web browsers.
  *
- * \sa connector
+ * \sa connector()
  */
 void QxtHttpSessionManager::setConnector(QxtAbstractHttpConnector* connector)
 {
@@ -253,7 +253,7 @@ void QxtHttpSessionManager::setConnector(QxtAbstractHttpConnector* connector)
  * This overload is provided for convenience and can construct the predefined
  * connectors provided with Qxt.
  *
- * \sa connector
+ * \sa connector()
  */
 void QxtHttpSessionManager::setConnector(Connector connector)
 {
@@ -270,7 +270,7 @@ void QxtHttpSessionManager::setConnector(Connector connector)
 
 /*!
  * Returns the connector used to manage connections to web browsers.
- * \sa setConnector
+ * \sa setConnector()
  */
 QxtAbstractHttpConnector* QxtHttpSessionManager::connector() const
 {
@@ -281,7 +281,7 @@ QxtAbstractHttpConnector* QxtHttpSessionManager::connector() const
  * Returns \c true if sessions are automatically created for every connection
  * that does not already have a session cookie associated with it; otherwise
  * returns \c false.
- * \sa setAutoCreateSession
+ * \sa setAutoCreateSession()
  */
 bool QxtHttpSessionManager::autoCreateSession() const
 {
@@ -295,7 +295,7 @@ bool QxtHttpSessionManager::autoCreateSession() const
  * Sessions are only created for clients that support HTTP cookies. HTTP/0.9
  * clients will never generate a session.
  *
- * \sa autoCreateSession
+ * \sa autoCreateSession()
  */
 void QxtHttpSessionManager::setAutoCreateSession(bool enable)
 {
@@ -306,7 +306,7 @@ void QxtHttpSessionManager::setAutoCreateSession(bool enable)
  * Returns the QxtAbstractWebService that is used to respond to requests from
  * connections that are not associated with a session.
  *
- * \sa setStaticContentService
+ * \sa setStaticContentService()
  */
 QxtAbstractWebService* QxtHttpSessionManager::staticContentService() const
 {
@@ -320,7 +320,7 @@ QxtAbstractWebService* QxtHttpSessionManager::staticContentService() const
  * If no static content service is set, connections that are not associated
  * with a session will receive an "Internal Configuration Error".
  *
- * \sa staticContentService
+ * \sa staticContentService()
  */
 void QxtHttpSessionManager::setStaticContentService(QxtAbstractWebService* service)
 {
