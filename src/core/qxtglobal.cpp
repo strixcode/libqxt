@@ -80,7 +80,7 @@
 
     \sa QXT_VERSION_STR
  */
-const char* qxtVersion()
+const char * qxtVersion()
 {
     return QXT_VERSION_STR;
 }
@@ -176,13 +176,14 @@ void MyTestPrivate::doQuux() {
  * \relates <QxtPimpl>
  * Declares that a public class has a related private class.
  *
- * This shuold be put in the private section of the public class. The parameter is the name of the public class.
+ * This shuold be put in the private section of the public class. The
+ * parameter \a PUB must be the name of the public class.
  */
 
 /*!
  * \macro QXT_DECLARE_PUBLIC(PUB)
  * \relates <QxtPimpl>
- * Declares that a private class has a related public class.
+ * Declares that a private class has a related public class named \a PUB.
  *
  * This may be put anywhere in the declaration of the private class. The parameter is the name of the public class.
  */
@@ -193,23 +194,26 @@ void MyTestPrivate::doQuux() {
  * Initializes resources owned by the private class.
  *
  * This should be called from the public class's constructor,
- * before qxt_d() is used for the first time. The parameter is the name of the public class.
+ * before qxt_d() is used for the first time. The parameter \a PUB must be
+ * the name of the public class.
  */
 
 /*!
  * \macro QXT_D(PUB)
  * \relates <QxtPimpl>
- * Returns a reference in the current scope named "d" to the private class.
+ * Returns a reference in the current scope named "d" to the private class
+ * associated with the public class \a PUB.
  *
- * This function is only available in a class using \a QXT_DECLARE_PRIVATE.
+ * This function is only available in a class using QXT_DECLARE_PRIVATE().
  */
 
 /*!
  * \macro QXT_P(PUB)
  * \relates <QxtPimpl>
- * Creates a reference in the current scope named "q" to the public class.
+ * Creates a reference in the current scope named "q" to the public class
+ * named \a PUB.
  *
- * This macro only works in a class using \a QXT_DECLARE_PUBLIC.
+ * This macro only works in a class using QXT_DECLARE_PUBLIC().
  */
 
 /*!
@@ -234,7 +238,7 @@ void MyTestPrivate::doQuux() {
  * \relates <QxtPimpl>
  * Returns a reference to the public class.
  *
- * This function is only available in a class using \a QXT_DECLARE_PUBLIC.
+ * This function is only available in a class using QXT_DECLARE_PUBLIC().
  */
 
 /*!
@@ -242,6 +246,6 @@ void MyTestPrivate::doQuux() {
  * \relates <QxtPimpl>
  * Returns a const reference to the public class.
  *
- * This function is only available in a class using \a QXT_DECLARE_PUBLIC.
+ * This function is only available in a class using QXT_DECLARE_PUBLIC().
  * This overload will be automatically used in const functions.
  */

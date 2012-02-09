@@ -43,7 +43,9 @@
 #include <QDebug>
 
 /*!
- * \internal this class is used on *nix to register all locks created by a process and to let locks on *nix act like locks on windows
+ * \internal
+ *  This class is used on *nix to register all locks created by a process
+ *  and to let locks on *nix act like locks on Windows.
  */
 class QxtFileLockRegistry
 {

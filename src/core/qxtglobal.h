@@ -47,7 +47,7 @@
 
 #define QXT_DLLEXPORT DO_NOT_USE_THIS_ANYMORE
 
-#if !defined(QXT_STATIC)
+#if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_CORE)
 #        define QXT_CORE_EXPORT Q_DECL_EXPORT
 #    else
@@ -57,7 +57,7 @@
 #    define QXT_CORE_EXPORT
 #endif // BUILD_QXT_CORE
  
-#if !defined(QXT_STATIC)
+#if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_GUI)
 #        define QXT_GUI_EXPORT Q_DECL_EXPORT
 #    else
@@ -67,7 +67,7 @@
 #    define QXT_GUI_EXPORT
 #endif // BUILD_QXT_GUI
  
-#if !defined(QXT_STATIC)
+#if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_NETWORK)
 #        define QXT_NETWORK_EXPORT Q_DECL_EXPORT
 #    else
@@ -77,7 +77,7 @@
 #    define QXT_NETWORK_EXPORT
 #endif // BUILD_QXT_NETWORK
  
-#if !defined(QXT_STATIC)
+#if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_SQL)
 #        define QXT_SQL_EXPORT Q_DECL_EXPORT
 #    else
@@ -87,7 +87,7 @@
 #    define QXT_SQL_EXPORT
 #endif // BUILD_QXT_SQL
  
-#if !defined(QXT_STATIC)
+#if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_WEB)
 #        define QXT_WEB_EXPORT Q_DECL_EXPORT
 #    else
@@ -97,7 +97,7 @@
 #    define QXT_WEB_EXPORT
 #endif // BUILD_QXT_WEB
  
-#if !defined(QXT_STATIC)
+#if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_BERKELEY)
 #        define QXT_BERKELEY_EXPORT Q_DECL_EXPORT
 #    else
@@ -107,7 +107,7 @@
 #    define QXT_BERKELEY_EXPORT
 #endif // BUILD_QXT_BERKELEY
 
-#if !defined(QXT_STATIC)
+#if !defined(QXT_STATIC) && !defined(QXT_DOXYGEN_RUN)
 #    if defined(BUILD_QXT_ZEROCONF)
 #        define QXT_ZEROCONF_EXPORT Q_DECL_EXPORT
 #    else
@@ -117,7 +117,7 @@
 #    define QXT_ZEROCONF_EXPORT
 #endif // QXT_ZEROCONF_EXPORT
 
-#if defined BUILD_QXT_CORE || defined BUILD_QXT_GUI || defined  BUILD_QXT_SQL || defined BUILD_QXT_NETWORK || defined BUILD_QXT_WEB || defined BUILD_QXT_BERKELEY || defined BUILD_QXT_ZEROCONF
+#if defined(BUILD_QXT_CORE) || defined(BUILD_QXT_GUI) || defined(BUILD_QXT_SQL) || defined(BUILD_QXT_NETWORK) || defined(BUILD_QXT_WEB) || defined(BUILD_QXT_BERKELEY) || defined(BUILD_QXT_ZEROCONF)
 #   define BUILD_QXT
 #endif
 

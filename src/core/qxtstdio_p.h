@@ -40,11 +40,7 @@ class QxtStdioPrivate : public QObject, public QxtPrivate<QxtStdio>
 
 public:
     QXT_DECLARE_PUBLIC(QxtStdio)
-    QxtStdioPrivate()
-    {
-        notify = 0;
-        hadeof = false;
-    }
+    QxtStdioPrivate() : hadeof(false), notify(0) {}
     bool hadeof;
 private:
     QSocketNotifier * notify;
