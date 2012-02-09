@@ -48,7 +48,7 @@
 
 
 /*!
-  \class QxtScheduleView QxtScheduleView
+  \class QxtScheduleView
   \inmodule QxtGui
   \brief The QxtScheduleView class provides an iCal like view to plan events
 
@@ -947,7 +947,3 @@ void QxtScheduleView::setTimeRange(const QDateTime & fromDateTime, const QDateTi
     qxt_d().m_startUnixTime = startTime.toTime_t();
     qxt_d().m_endUnixTime = endTime.toTime_t();
 }
-
-
-
-

@@ -32,7 +32,7 @@
 /*!
   \class QxtMultiRootProxyModel
   \inmodule QxtCore
-  \brief Tree proxy model with shortcuts
+  \brief The QxtMultiRootProxyModel class provides a tree proxy model with shortcuts
 
   QxtMultiRootProxyModel allows you to restructure a tree model by placing a selection
   of indexes at the top level. For example, a proxy on QFileSystemModel could provide for
