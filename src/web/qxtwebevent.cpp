@@ -140,17 +140,29 @@ QxtWebRequestEvent::~QxtWebRequestEvent()
  * set to \a true and clientCertificate will be set. Otherwise, isSecure will be set
  * to \a false.
  *
- * \sa clientCertificate
+ * \sa clientCertificate, remoteAddress
  */
 
 /*!
- * \variable QxtWebRequest::clientCertificate
+ *  \variable QxtWebRequestEvent::remoteAddress
+ *  This variable will contain the address of the client as a QHostAddress.
+ *  In IPv6 dual-stack systems (generally only Linux), this may be a IPv4
+ *  mapped address.
+ *
+ *  \warning This variable was originally declared as a QString value in
+ *  prior releases, albeit undocumented until now.
+ *
+ * \sa isSecure, clientCertificate
+ */
+
+/*!
+ * \variable QxtWebRequestEvent::clientCertificate
  * If the request was sent over an encrypted channel, such as HTTPS, clientCertificate
  * will contain the certificate presented by the requesting client, if any.
  *
  * This member variable is not available if Qt was not compiled with SSL support.
  *
- * \sa isSecure
+ * \sa isSecure, remoteAddress
  */
 
 /*!

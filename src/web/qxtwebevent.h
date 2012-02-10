@@ -40,6 +40,7 @@
 #include <QUrl>
 #include <QMultiHash>
 #include <QDateTime>
+#include <QHostAddress>
 #ifndef QT_NO_OPENSSL
 #include <QSslCertificate>
 #endif
@@ -86,7 +87,7 @@ public:
     QString contentType;
     QPointer<QxtWebContent> content;
     QString method;
-    QString remoteAddress;
+    QHostAddress remoteAddress;
     bool isSecure;
 #ifndef QT_NO_OPENSSL
     QSslCertificate clientCertificate;

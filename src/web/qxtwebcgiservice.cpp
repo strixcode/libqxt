@@ -200,7 +200,7 @@ void QxtWebCgiService::pageRequestedEvent(QxtWebRequestEvent* event)
     env["SCRIPT_NAME"] = event->originalUrl.path().remove(QRegExp(QRegExp::escape(event->url.path()) + '$'));
     env["SCRIPT_FILENAME"] = qxt_d().binary;    // CGI/1.1 doesn't define this but PHP demands it
     env.remove("REMOTE_HOST");
-    env["REMOTE_ADDR"] = event->remoteAddress;
+    env["REMOTE_ADDR"] = event->remoteAddress.toString();
     // TODO: If we ever support HTTP authentication, we should use these
     env.remove("AUTH_TYPE");
     env.remove("REMOTE_USER");

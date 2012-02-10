@@ -434,7 +434,7 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(device);
     if (socket)
     {
-        event->remoteAddress = socket->peerAddress().toString();
+        event->remoteAddress = socket->peerAddress();
 #ifndef QT_NO_OPENSSL
         QSslSocket* sslSocket = qobject_cast<QSslSocket*>(socket);
         if(sslSocket) {
