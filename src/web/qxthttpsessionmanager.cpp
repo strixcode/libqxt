@@ -406,6 +406,8 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
     if (qxt_d().sessionKeys.contains(sessionCookie))
     {
         sessionID = qxt_d().sessionKeys[sessionCookie];
+        if(!sessionID && header.majorVersion() > 0 && qxt_d().autoCreateSession)
+            sessionID = newSession();
     }
     else if (header.majorVersion() > 0 && qxt_d().autoCreateSession)
     {
@@ -461,9 +463,9 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
     event->headers.insert("X-Request-Protocol", "HTTP/" + QString::number(state.httpMajorVersion) + '.' + QString::number(state.httpMinorVersion));
     if (sessionID && session(sessionID))
     {
-	QxtAbstractWebService *service = session(sessionID);
-	if(content)
-	    content->setParent(service); // Set content ownership to the service
+        QxtAbstractWebService *service = session(sessionID);
+        if(content)
+            content->setParent(service); // Set content ownership to the service
         service->pageRequestedEvent(event);
     }
     else if (qxt_d().staticService)
