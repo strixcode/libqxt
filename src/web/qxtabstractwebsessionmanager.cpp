@@ -128,7 +128,7 @@ void QxtAbstractWebSessionManager::setServiceFactory(ServiceFactory* factory)
 /*!
  * Returns the service factory in use by the session manager.
  *
- * \sa setServiceFactory(ServiceFactory*)
+ * \sa setServiceFactory()
  */
 QxtAbstractWebSessionManager::ServiceFactory* QxtAbstractWebSessionManager::serviceFactory() const
 {
@@ -196,12 +196,14 @@ void QxtAbstractWebSessionManager::sessionDestroyed(int)
  * successful shutdown (to change ports for example).
  *
  * Returns true if the session was active (successfully shut down) and false
- * otherwise.
+ * otherwise. This may be connected to an application's aboutToQuit() signal
+ * but doing so is not likely to allow any currently processing requests to
+ * complete.
  */
 
 /*!
  * \fn virtual void QxtAbstractWebSessionManager::postEvent(QxtWebEvent* event)
- * Adds the event to the event queue for its associated session.
+ * Adds the \a event to the event queue for its associated session.
  *
  * Since different protocols may require different event processing behavior,
  * there is no default implementation in QxtAbstractWebSessionManager. Subclasses

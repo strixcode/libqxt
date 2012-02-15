@@ -47,12 +47,14 @@ public:
     QxtAbstractWebSessionManager(QObject* parent = 0);
 
     virtual bool start() = 0;
-    virtual bool shutdown() = 0;
     virtual void postEvent(QxtWebEvent* event) = 0;
     void setServiceFactory(ServiceFactory* factory);
     ServiceFactory* serviceFactory() const;
 
     QxtAbstractWebService* session(int sessionID) const;
+
+public Q_SLOTS:
+    virtual bool shutdown() = 0;
 
 protected:
     int createService();
