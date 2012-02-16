@@ -1,4 +1,4 @@
-#ifndef QXTSQL_H_INCLUDED
+
 /****************************************************************************
 ** Copyright (c) 2006 - 2011, the LibQxt project.
 ** See the Qxt AUTHORS file for a list of authors and copyright holders.
@@ -29,10 +29,41 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
-#define QXTSQL_H_INCLUDED
 
-#include "qxtsqlpackage.h"
-#include "qxtsqlpackagemodel.h"
-#include "qxtsqlthreadmanager.h"
+#ifndef QXTSQLTHREADMANAGER_H
+#define QXTSQLTHREADMANAGER_H
+#include <QThreadStorage>
+#include <QSqlDatabase>
+#include <qxtglobal.h>
 
-#endif // QXTSQL_H_INCLUDED
+class QXT_SQL_EXPORT QxtSqlThreadManager
+{
+    Q_DISABLE_COPY(QxtSqlThreadManager)
+
+public:
+    virtual ~QxtSqlThreadManager();
+    void selectDatabase(const QString &);
+    inline QString connectionName() const { return this->name; }
+    inline QSqlDatabase database() const
+    {
+	return QSqlDatabase::database(connectionName());
+    }
+
+    // Static methods for thread use
+    static QxtSqlThreadManager * manager(const QString & masterName =
+	    QLatin1String(QSqlDatabase::defaultConnection));
+    inline static QSqlDatabase connection(const QString & masterName =
+	    QLatin1String(QSqlDatabase::defaultConnection))
+    {
+	return manager(masterName)->database();
+    }
+
+protected:
+    QxtSqlThreadManager(const QString &);
+    QString name;
+
+private:
+    static QThreadStorage<QxtSqlThreadManager *> connections;
+};
+
+#endif // QXTSQLTHREADMANAGER_H
