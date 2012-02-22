@@ -104,40 +104,42 @@ if(options.count("level")) {
 
 static const char* qxt_qt_options[] =
 {
-    "=style",       QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application GUI style"),
-    "=stylesheet",  QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application stylesheet"),
-    "=session",     QT_TRANSLATE_NOOP("QxtCommandOptions", "restores the application from an earlier session"),
-    "widgetcount",  QT_TRANSLATE_NOOP("QxtCommandOptions", "displays debugging information about widgets"),
-    "reverse",      QT_TRANSLATE_NOOP("QxtCommandOptions", "use right-to-left layout"),
+    "=style",           QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application GUI style"),
+    "=stylesheet",      QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application stylesheet"),
+    "=session",         QT_TRANSLATE_NOOP("QxtCommandOptions", "restores the application from an earlier session"),
+    "widgetcount",      QT_TRANSLATE_NOOP("QxtCommandOptions", "displays debugging information about widgets"),
+    "reverse",          QT_TRANSLATE_NOOP("QxtCommandOptions", "use right-to-left layout"),
+    "=graphicssystem",  QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application GUI graphics system"),
+    "=qmljsdebugger",   QT_TRANSLATE_NOOP("QxtCommandOptions", "activates the QML/JS debugger with a specified port"),
 #ifdef QT_DEBUG
-    "nograb",       QT_TRANSLATE_NOOP("QxtCommandOptions", "never grab the mouse or keyboard"),
+    "nograb",           QT_TRANSLATE_NOOP("QxtCommandOptions", "never grab the mouse or keyboard"),
 #endif
 #if defined(QT_DEBUG) && defined(Q_WS_X11)
-    "dograb",       QT_TRANSLATE_NOOP("QxtCommandOptions", "grab the mouse/keyboard even in a debugger"),
-    "sync",         QT_TRANSLATE_NOOP("QxtCommandOptions", "run in synchronous mode for debugging"),
+    "dograb",           QT_TRANSLATE_NOOP("QxtCommandOptions", "grab the mouse/keyboard even in a debugger"),
+    "sync",             QT_TRANSLATE_NOOP("QxtCommandOptions", "run in synchronous mode for debugging"),
 #endif
 #ifdef Q_WS_WIN
-    "direct3d",     QT_TRANSLATE_NOOP("QxtCommandOptions", "use Direct3D by default"),
+    "direct3d",         QT_TRANSLATE_NOOP("QxtCommandOptions", "use Direct3D by default"),
 #endif
 #ifdef Q_WS_X11
-    "=display",     QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the X11 display"),
-    "=geometry",    QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the geometry of the first window"),
-    "=font",        "",
-    "=fn",          QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default font"),
-    "=background",  "",
-    "=bg",          QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default background color"),
-    "=foreground",  "",
-    "=fg",          QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default foreground color"),
-    "=button",      "",
-    "=btn",         QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default button color"),
-    "=name",        QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application name"),
-    "=title",       QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application title"),
-    "=visual",      QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the X11 visual type"),
-    "=ncols",       QT_TRANSLATE_NOOP("QxtCommandOptions", "limit the number of colors on an 8-bit display"),
-    "cmap",         QT_TRANSLATE_NOOP("QxtCommandOptions", "use a private color map"),
-    "=im",          QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the input method server"),
-    "noxim",        QT_TRANSLATE_NOOP("QxtCommandOptions", "disable the X Input Method"),
-    "=inputstyle",  QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the style used by the input method"),
+    "=display",         QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the X11 display"),
+    "=geometry",        QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the geometry of the first window"),
+    "=font",            "",
+    "=fn",              QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default font"),
+    "=background",      "",
+    "=bg",              QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default background color"),
+    "=foreground",      "",
+    "=fg",              QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default foreground color"),
+    "=button",          "",
+    "=btn",             QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the default button color"),
+    "=name",            QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application name"),
+    "=title",           QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the application title"),
+    "=visual",          QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the X11 visual type"),
+    "=ncols",           QT_TRANSLATE_NOOP("QxtCommandOptions", "limit the number of colors on an 8-bit display"),
+    "cmap",             QT_TRANSLATE_NOOP("QxtCommandOptions", "use a private color map"),
+    "=im",              QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the input method server"),
+    "noxim",            QT_TRANSLATE_NOOP("QxtCommandOptions", "disable the X Input Method"),
+    "=inputstyle",      QT_TRANSLATE_NOOP("QxtCommandOptions", "sets the style used by the input method"),
 #endif
     0,              0
 };
