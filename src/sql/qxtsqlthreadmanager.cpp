@@ -100,7 +100,7 @@ QxtSqlThreadManager::QxtSqlThreadManager(const QString &masterName)
 {
     // Build a name for the new connection
     name = QString("$qxt$tc_%1$%2")
-	.arg(QThread::currentThreadId())
+	.arg((long)(void*)QThread::currentThreadId())
 	.arg(masterName);
     // Clone the primary thread's connection
     Q_ASSERT(QSqlDatabase::contains(masterName));
