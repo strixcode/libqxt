@@ -44,6 +44,22 @@ macx {
     QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
     QMAKE_LFLAGS += -F$${QXT_BUILD_TREE}/lib
 }
+unix|win32-g++* {
+    CONFIG += create_pc create_prl
+    QMAKE_PKGCONFIG_REQUIRES += QtCore
+    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+    QMAKE_PKGCONFIG_PREFIX = $${QXT_BUILD_TREE}
+#    QMAKE_PKGCONFIG_LIBDIR = $${QXT_INSTALL_LIBS}
+    QMAKE_PKGCONFIG_INCDIR = $${QXT_BUILD_TREE}/include/$${CLEAN_TARGET}
+    include_replace.match = $$re_escape($${QMAKE_INCDIR_QXT})
+    include_replace.replace = $${QXT_INSTALL_HEADERS}/$${CLEAN_TARGET}
+    lib_replace.match = $$re_escape($${QMAKE_LIBDIR_QXT})
+    lib_replace.replace = $${QXT_INSTALL_LIBS}
+    prefix_replace.match = $$re_escape($$QXT_BUILD_TREE)
+    prefix_replace.replace = $${QXT_INSTALL_PREFIX}
+    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace prefix_replace
+}
+
 win32-msvc|win32-msvc2005|win32-msvc2008: QMAKE_LFLAGS_DEBUG += /PDB:$$DESTDIR/$${TARGET}.pdb
 
 symbian {

@@ -10,3 +10,5 @@ include(../qxtbase.pri)
 CONFIG          += designer plugin
 target.path      = $$[QT_INSTALL_PLUGINS]/designer
 INSTALLS         = target
+
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES += QxtCore QxtGui

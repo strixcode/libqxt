@@ -18,3 +18,5 @@ macx:LIBS       += -framework Carbon
 # than assuming that the application or another library will bring
 # in the necessary symbols at run time.
 contains(QMAKE_LFLAGS, "-Wl,--no-undefined"):LIBS += $${QMAKE_LIBS_X11}
+
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES += QxtCore QtGui

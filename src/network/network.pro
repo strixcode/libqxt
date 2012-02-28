@@ -10,3 +10,5 @@ include(../qxtbase.pri)
 contains(DEFINES,HAVE_OPENSSL){
  include(../3rdparty/libssh2/libssh2.pri)
 }
+
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QxtCore QtNetwork

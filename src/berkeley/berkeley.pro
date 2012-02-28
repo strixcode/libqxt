@@ -8,3 +8,5 @@ include(berkeley.pri)
 include(../qxtbase.pri)
 
 !win32:LIBS     += -ldb
+
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES += QxtCore
