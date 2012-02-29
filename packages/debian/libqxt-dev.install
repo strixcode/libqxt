@@ -5,6 +5,9 @@
 # Headers
 usr/include/qxt/
 
+# Pkgconfig
+usr/lib/qxt/pkgconfig/*.pc
+
 # Qt4 designer & build specs
 usr/lib/qt4/plugins/designer/*
 usr/share/qt4/mkspecs/*

@@ -87,7 +87,11 @@ applications using LibQxt.
 %{_qt4_headerdir}/*
 %{_qt4_plugindir}/designer/*.so
 %{_qt4_datadir}/mkspecs/features/qxt*.prf
+%{_qt4_libdir}/pkgconfig/*.pc
 
 %changelog
+* Thu Sep 01 2011 Dee Holtsclaw <dholtsclaw@libqxt.org> - 0.7.0-2
+- Added pkgconfig files for GNU AutoTools users
+
 * Thu Sep 01 2011 Dee Holtsclaw <dholtsclaw@libqxt.org> - 0.7.0-1
 - Initial SPEC setup for inclusion in Qxt builds
