@@ -30,11 +30,9 @@
 *****************************************************************************/
 
 #include "qxtcurrency.h"
-#ifndef QT_NO_DEBUG
-#include <QDebug>
-#endif
 #include <stdlib.h>
 #include <stdint.h>
+
 /*!
  *  \class QxtCurrency
  *  \inmodule QxtCore
@@ -43,12 +41,23 @@
  *  inaccuracies inherent in floating point operations with regard to
  *  monetary amounts.
  *
+ *  \since 0.7
+ *
  *  The internal representation is that of a long-long (64-bit) integer
  *  with an implied exponent of -4. This gives a total precision of 4
  *  decimal places with an effective range of
- *  \bold -922,337,203,685,477.5808 to \bold 922,337,203,685,477.5807
- *  (inclusive).
- *  This type is equivalent to the CY type in Microsoft Windows.
+ *  \bold -922,337,203,685,477.5807 to \bold 922,337,203,685,477.5807
+ *  (inclusive). The actual lowest value is reserved to indicate a NULL
+ *  status. This type is equivalent to the CURRENCY type in Microsoft
+ *  Windows and support for these values is provided in that environment.
+ *
+ *  Specializations for \c std::abs and \c std::numeric_limits are
+ *  provided for STL compatibility.
+ *
+ *  \warning Binary arithmetic operations will produce a NULL result if the
+ *  primary operand is null while in-place operations (e.g. \c +=) will
+ *  treat a null right-hand operand as 0. Comparisions operate on normalized
+ *  values causing null values to evaluate as zero.
  *
  *  \warning Although QxtCurrency is declared as a \i meta-type, it must
  *  be registered to be used properly in a QVariant or in conjunction with
@@ -68,67 +77,73 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////////////
 // Supporting functions (global)
 
-/*! This method provides QDataStream support for currency values. The value
- *  \a v is streamed into \a out.
- */
+/*!
+    \relates QxtCurrency
+
+    This method provides QDataStream support for currency values. The value
+    \a v is streamed into \a out.
+    Returns a reference to the stream \a out.
+*/
 QDataStream &operator<<(QDataStream &out, const QxtCurrency &v)
 {
     out << v.value;
     return out;
 }
 
-/*! This method provides QDataStream support for currency values. The value
- *  \a v is extracted from the stream \a in.
- */
+/*!
+    \relates QxtCurrency
+
+    This method provides QDataStream support for currency values. The value
+    \a v is extracted from the stream \a in.
+    Returns a reference to the stream \a in.
+*/
 QDataStream &operator>>(QDataStream &in, QxtCurrency &v)
 {
     in >> v.value;
     return in;
 }
 
-#ifndef QT_NO_DEBUG
-//! Insert into debug stream
-QDebug operator<<(QDebug dbg, const QxtCurrency &v)
-{
-    dbg.nospace() << "QxtCurrency(" << v.toString() << ')';
-    return dbg.space();
-}
-#endif
-
 //////////////////////////////////////////////////////////////////////////////
 // QxtCurrency class
 
-/*! Extracts a QxtCurrency value from a QVariant \a v. This is needed on the
+/*! Extracts a QxtCurrency value from a QVariant \a v. This is useful on the
  *  off chance the variant actually contains a QxtCurrency type. As a bonus,
- *  strings are handled as well.
+ *  strings and NULL values (e.g. from a database query) are handled as well.
  */
 QxtCurrency QxtCurrency::fromVariant(const QVariant &v)
 {
     QxtCurrency result;
-    switch(v.type()){
-    case QVariant::String:
-	result = QxtCurrency(v.toString());
-	break;
-    case QVariant::Int:
-    case QVariant::UInt:
-	result = QxtCurrency(v.toInt());
-	break;
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-	result = QxtCurrency(v.toLongLong());
-	break;
-    case QVariant::Double:
-	result = QxtCurrency(v.toDouble());
-	break;
-    case QVariant::Invalid:
-	break; // Treating as zero
-    default:
-	if(v.userType() == qMetaTypeId<QxtCurrency>())
-	    result = v.value<QxtCurrency>();
+    if(v.isNull())
+	result.setNull();
+    else{
+	switch(v.type()){
+	case QVariant::ByteArray:
+	    result = QxtCurrency(v.toByteArray().constData());
+	    break;
+	case QVariant::String:
+	    result = QxtCurrency(v.toString());
+	    break;
+	case QVariant::Int:
+	case QVariant::UInt:
+	    result = QxtCurrency(v.toInt());
+	    break;
+	case QVariant::LongLong:
+	case QVariant::ULongLong:
+	    result = QxtCurrency(v.toLongLong());
+	    break;
+	case QVariant::Double:
+	    result = QxtCurrency(v.toDouble());
+	    break;
+	case QVariant::Invalid:
+	    break; // Treating as zero
+	default:
+	    if(v.userType() == qMetaTypeId<QxtCurrency>())
+		result = v.value<QxtCurrency>();
 #ifndef QT_NO_DEBUG
-	else
-	    qWarning() << "Conversion failure in QxtCurrency::fromVariant";
+	    else
+		qWarning() << "Conversion failure in QxtCurrency::fromVariant";
 #endif
+	}
     }
     return result;
 }
@@ -237,12 +252,13 @@ QByteArray QxtCurrency::toString() const
     return (p+1);
 }
 
-/*! Rounds a QxtCurrency value to \a n number of decimal places.
+/*! Rounds a QxtCurrency value to \a n number of decimal places. Since the
+ *  maximum precision is 4 decimal places, using a value 4 or greater will
+ *  have no effect on the result (i.e. the current value will be returned
+ *  unchanged).
  *  \warning It is permissible to use a negative number to round to the
  *  nearest hundred, thousand, etc. Exceeding the effective range, however,
- *  will cause a \i std::range_error exception to be thrown. OTOH, using a
- *  value of 4 or greater will be silently ignored and the result will be
- *  the same as the source value.
+ *  will cause a \c std::range_error exception to be thrown.
  */
 QxtCurrency QxtCurrency::round(int n) const
 {
@@ -262,37 +278,44 @@ QxtCurrency QxtCurrency::round(int n) const
     return result;
 }
 
-/*! Clamps the value to specified range [\a l, \a h]. If the current value is
- *  less than l, it's set to l or if it is greater than h, it's set to h. If
- *  the low limit supplied is greater than the high limit, the results are
- *  undefined. Returns a reference to the value being manipulated.
+/*! Clamps the value to specified range [\a low, \a high]. If the current
+ *  value is less than \a low, it's set to \a low or if it is greater than
+ *  \a high, it's set to \a high. Otherwise the value remains unchanged.
+ *  If the low limit supplied is greater than the high limit, the results
+ *  are undefined.
+ *  Returns a reference to the value being manipulated.
+ *  \warning If the current value is NULL, the value remains NULL.
  *  \sa clamped()
  */
-QxtCurrency& QxtCurrency::clamp(const QxtCurrency &l, const QxtCurrency &h)
+QxtCurrency& QxtCurrency::clamp(const QxtCurrency &low, const QxtCurrency &high)
 {
-    if(*this < l)
-	*this = l;
-    else if(*this > h)
-	*this = h;
+    if(!isNull()){
+	if(*this < low)
+	    *this = low;
+	else if(*this > high)
+	    *this = high;
+    }
     return *this;
 }
 
-/*! Clamps the value to specified range [\a l, \a h]. If the current value is
- *  less than l, l is returned. If it is greater than h, h is returned.
- *  Otherwise the existing value is returned. If the low limit supplied is
- *  greater than the high limit, the results are undefined. Unlike clamp(),
- *  the existing value does not change.
+/*! Clamps the value to specified range [\a low, \a high]. If the current
+ *  value is less than \a low, \a low is returned. If it is greater than
+ *  \a high, \a high is returned. Otherwise the existing value is returned.
+ *  If the low limit supplied is greater than the high limit, the results
+ *  are undefined. Unlike clamp(), the existing value does not change.
+ *  \warning If the current value is NULL, the result is also NULL.
  *  \sa clamp()
  */
-QxtCurrency QxtCurrency::clamped(const QxtCurrency &l,
-	const QxtCurrency &h) const
+QxtCurrency QxtCurrency::clamped(const QxtCurrency &low,
+	const QxtCurrency &high) const
 {
-    if(*this < l)
-	return l;
-    else if(*this > h)
-	return h;
-    else
-	return *this;
+    if(!isNull()){
+	if(*this < low)
+	    return low;
+	else if(*this > high)
+	    return high;
+    }
+    return *this;
 }
 
 /*! Calculates the proper payment amount for an amortized loan repayment
@@ -310,6 +333,7 @@ QxtCurrency QxtCurrency::clamped(const QxtCurrency &l,
  *  \warning The result will be accurate to four decimal places. Since it is
  *  unlikely that fractions of a cent will be useful (or desired), the
  *  result should be rounded to the nearest cent using round().
+ *  \sa amortize(), amortizedInterest()
  */
 QxtCurrency QxtCurrency::amortizedPayment(const QxtCurrency &P, double r, int n)
 {
@@ -327,26 +351,27 @@ QxtCurrency QxtCurrency::amortizedPayment(const QxtCurrency &P, double r, int n)
     return pmt;
 }
 
-/*! Calculates the total interest over the term of a loan and the principal
- *  amount remaining after the last payment has been applied. Therefore, the
- *  last payment should be the payment amount plus the balloon value to
- *  insure the principal reaches exactly zero and is not actually over or
- *  under paid. The balloon value also indicates how accurately the payment
- *  amount represents a properly amortized payment since, if it is
- *  significantly negative, the payment exceeds what is needed to match the
- *  term and, when positive, the payment is insufficient to meet the terms. In
- *  extreme cases, the balloon value may even exceed the original principal
- *  which indicates the payment amount is not sufficient to cover the
- *  interest, much less reduce the principal (think Quicken Loans and
- *  Countrywide). The principal amount (borrowed) is \a P, the periodic rate
- *  \a r, number of payments \a n and periodic payment amount \a p. The later
- *  may be obtained using the amortizedPayment() method and the other 3
- *  parameters.
+/*! Calculates the total interest over the term of a loan (\c Pair.first)
+ *  and the principal amount remaining after the last payment has been
+ *  applied (\c Pair.second). Therefore, the last payment should be the
+ *  payment amount plus the balloon value to insure the principal reaches
+ *  exactly zero and is not over or under paid. The balloon value also
+ *  indicates how accurately the payment amount represents a properly
+ *  amortized payment since, if it is significantly negative, the payment
+ *  exceeds what is needed to match the term and, when positive, the payment
+ *  is insufficient to meet the terms. In extreme cases, the balloon value
+ *  may even exceed the original principal which indicates the payment amount
+ *  is not sufficient to cover the interest, much less reduce the principal
+ *  (think Quicken Loans and Countrywide). The principal amount (borrowed)
+ *  is \a P, the periodic rate \a r, number of payments \a n and periodic
+ *  payment amount \a p. The later may be obtained using the
+ *  amortizedPayment() method and the other 3 parameters.
  *
  *  The total repayment amount (principal and interest) can be calculated
- *  by adding the principal and the total interest (\i result.first) or by
- *  multiplying the payment amount by the term and adding the balloon amount
- *  (\i result.second). Both computations should yield the same amount.
+ *  by adding the principal and the total interest (\c {P + Pair.first})
+ *  or by multiplying the payment amount by the term and adding the balloon
+ *  amount (\c {(p * n) + Pair.second}). Both computations should yield the
+ *  same amount.
  *
  *  The total interest is determined by iterating over the number of payments
  *  and applying each payment less the period's interest. Although the result
@@ -357,6 +382,7 @@ QxtCurrency QxtCurrency::amortizedPayment(const QxtCurrency &P, double r, int n)
  *  \warning Once the principal reaches zero, no further interest will apply
  *  and the balloon value will accumulate the excess payments. If this happens,
  *  the term is too long or the payment amount too high.
+ *  \sa amortize(), amortizedPayment()
  */
 QxtCurrency::Pair QxtCurrency::amortizedInterest(QxtCurrency P, double r, int n,
 	const QxtCurrency &p)
@@ -377,18 +403,43 @@ QxtCurrency::Pair QxtCurrency::amortizedInterest(QxtCurrency P, double r, int n,
  *  interest rate \a r, number of payments \a n and an optional payment amount
  *  of \a p. If the payment amount is less than zero, it will be calculated
  *  internally for the optimum amount. The resulting list provides the
- *  payment amount (first member) and interest (second member) for each
+ *  payment amount (\c Pair.first) and interest (\c Pair.second) for each
  *  installment.
  *
  *  A declining balance is easily computed by subtracting the payment amount
- *  less the interest during each iteration. Once the principal reaches zero,
- *  no further interest will apply and the payment and interest amounts will
- *  be zero for all remaining entries in the result. If this happens, the
- *  term is too long or the payment amount too high. Likewise, if the payment
- *  amount is too low, the final payment entry will include the remaining
- *  unpaid principal. It's also possible the periodic interest will exceed
- *  the payment amount. If this happens the payment amount isn't even enough
- *  to cover the interest.
+ *  less the interest during each iteration
+ *  (\c {balance - (Pair.first - Pair.second)}).
+ *  Once the principal reaches zero, no further interest will apply and the
+ *  payment and interest amounts will be zero for all remaining entries in
+ *  the list. If this happens, the term is too long or the payment amount
+ *  too high. Likewise, if the payment amount is too low, the final payment
+ *  entry will include the remaining unpaid principal. It's also possible
+ *  the periodic interest will exceed the payment amount. If this happens
+ *  the payment amount isn't even enough to cover the interest.
+ *
+ *  \code
+ *  double apr = 6.0 / 100.0; // 6%
+ *  QxtCurrency principal = 100000; // $100,000
+ *  int years = 30;
+ *  QxtCurrency payment = principal.amortizedPayment(apr / 12.0, years * 12);
+ *  std::cout << "Payment = " << payment.toString() << std::endl;
+ *  std::cout << "BeginningBalance Payment Principal Interest EndingBalance TotalPaid" << std::endl;
+ *  QList<QxtCurrency::Pair> schedule = principal.amortize(apr / 12.0, years * 12, payment);
+ *  QxtCurrency paid, balance = principal;
+ *  foreach(const QxtCurrency::Pair inst, schedule){
+ *	QString line = QString("%1 %2 %3 %4 %5 %6")
+ *	    .arg(balance.toQString(), 16)
+ *	    .arg(inst.first.toQString(), 7)
+ *	    .arg((inst.first - inst.second).toQString(), 9)
+ *	    .arg(inst.second.toQString(), 8)
+ *	    .arg((balance - inst.first + inst.second).toQString(), 13)
+ *	    .arg((paid + inst.first).toQString(), 9);
+ *	std::cout << qPrintable(line) << std::endl;
+ *	balance -= inst.first - inst.second;
+ *	paid += inst.first;
+ *  }
+ *  \endcode
+ *  \sa amortizedInterest(), amortizedPayment()
  */
 QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 	QxtCurrency p)
@@ -416,40 +467,44 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 
 /*! \variable QxtCurrency::value
 
-  This is the actual value maintained by the QxtCurrency object. Although
-  publicly accessible, it is not intended to be modified directly.
+    This is the actual value maintained by the QxtCurrency object. Although
+    publicly accessible, it is not intended to be modified directly.
 */
 
 /*! \typedef QxtCurrency::Pair
 
-  This is a pair of currency values used as a return value by some methods.
+    This is a pair of currency values used as a return value by some methods.
 */
 
 /*! \fn QxtCurrency::QxtCurrency()
 
-  Constructs a currency object with a zero value.
+    Constructs a currency object with a zero value.
 */
 
 /*! \fn QxtCurrency::QxtCurrency(double v)
 
-  Constructs a currency object from a double value \a v. The value will be
-  rounded to the nearest 4th decimal place.
+    Constructs a currency object from a double value \a v. The value will be
+    rounded to the nearest 4th decimal place.
 */
 
 /*! \fn QxtCurrency::QxtCurrency(int v)
 
-  Constructs a currency object from an integer value \a v.
+    Constructs a currency object from an integer value \a v.
 */
 
 /*! \fn QxtCurrency::QxtCurrency(qlonglong v)
 
-  Constructs a currency object from a pre-adjusted integer value \a v. The
-  value is expected to already assume 4 decimal places so you should first
-  multiply by 10000LL if this is not the case.
+    Constructs a currency object from a pre-adjusted integer value \a v. The
+    value is expected to already assume 4 decimal places so you should first
+    multiply by 10000LL if this is not the case.
 
-  \warning This constructor is probably ill-advised. At least as documented.
-  Propose a static method for this conversion which takes a CY and enabled
-  for Windows. A corresponding operator CY() should also be considered.
+*/
+
+/*! \fn QxtCurrency::QxtCurrency(const CURRENCY &v)
+
+    Constructs a currency object from a CURRENCY value \a v.
+
+    \warning This constructor is only available in Windows builds.
 */
 
 /*! \fn QxtCurrency QxtCurrency::abs() const
@@ -484,7 +539,7 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 /*! \fn QxtCurrency::operator bool() const
 
     Converts the currency value to a \i boolean type. This facilities easy
-    testing for zero/non-zero values.
+    testing for zero/non-zero values. Null and zero both return false.
     \code
     QxtCurrency myMoney;
     ...
@@ -506,12 +561,50 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
     simply truncated (i.e. no rounding is performed).
 */
 
+/*! \fn QxtCurrency::operator CURRENCY() const
+
+    Converts the value into a CURRENCY type.
+
+    \warning This operator is only available in Windows builds.
+*/
+
+/*! \fn QxtCurrency & QxtCurrency::clamp(const Pair &r)
+    \overload
+    Clamps the value to specified range \a r [r.first, r.second].
+    \sa clamped()
+*/
+
+/*! \fn QxtCurrency QxtCurrency::clamped(const Pair &r) const
+    \overload
+    Clamps the value to specified range \a r [r.first, r.second].
+    \sa clamp()
+*/
+
+/*! \fn QxtCurrency & QxtCurrency::normalize()
+ *  Normalizes the currency value. This only affects null values which are
+ *  set to zero.
+ *  \sa normalized()
+ */
+
+/*! \fn QxtCurrency QxtCurrency::normalized() const
+ *  Returns a the current value normalized. For null values, zero is returned.
+ *  Otherwise the actual value is returned (which also could be zero).
+ *  \sa normalize()
+ */
+
 /*! \fn int QxtCurrency::sign() const
 
     Returns an integer representing the sign of the value. This will be 1 if
     the value is positive (> 0), -1 if the value is negative (< 0) and 0 if
     the value is exactly zero.
 */
+
+/*! \fn QVariant QxtCurrency::toVariant() const
+
+    Returns a QVariant containing the currency value. This is preferred over
+    using QVariant::fromValue() or qVariantFromValue() since these will not
+    preserve null status (i.e. QVariant::isNull() will always return false).
+ */
 
 /*! \fn QxtCurrency QxtCurrency::operator+(const QxtCurrency &rhs) const
 
@@ -582,3 +675,28 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
  *  possibly, the decimal point itself.
  *  \sa toString()
  */
+
+/*! \fn bool QxtCurrency::isNull() const
+ *  Returns true if the value contains the special "null" value
+ *  (\c {std::numeric_limits<QxtCurrency>::quiet_NaN()}) and false otherwise.
+ *  \sa setNull()
+ */
+
+/*! \fn void QxtCurrency::setNull()
+ *  Sets the value to the special "null" status. This is indicated by the
+ *  \c {std::numeric_limits<QxtCurrency>::quiet_NaN()} value.
+ *  \sa isNull()
+ */
+
+/*!
+    \fn QDebug operator<<(QDebug dbg, const QxtCurrency &v)
+    \relates QxtCurrency
+
+    Provides QDebug support for QxtCurrency values. The value \a v is
+    emitted to the debugging stream \a dbg and a reference returned to same.
+    \code
+    QxtCurrency myValue;
+    ...
+    qDebug() << "myValue is" << myValue;
+    \endcode
+*/

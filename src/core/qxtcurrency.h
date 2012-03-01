@@ -39,15 +39,15 @@
 #include <limits>
 #include <QVariant>
 #include <QTextStream>
+#include <QDataStream>
+#if defined(qdoc) || !defined(QT_NO_DEBUG)
+#include <QDebug>
+#endif
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 // Supporting functions
-
-#ifndef QT_NO_DEBUG
-class QDebug;
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // QxtCurrency -- fixed-precision datatype
@@ -55,6 +55,7 @@ class QDebug;
 class QXT_CORE_EXPORT QxtCurrency
 {
 public:
+    typedef QPair<QxtCurrency,QxtCurrency> Pair;
     // Construct as zero.
     QxtCurrency()
     {
@@ -71,27 +72,38 @@ public:
 	value = static_cast<qlonglong>(v) * 10000LL;
     }
     // Construct via a 8-byte integer.
-    explicit QxtCurrency(qlonglong v)
-    {
-	value = v;
-    }
+    explicit QxtCurrency(qlonglong v) : value(v) {}
+#if defined(qdoc) || defined(Q_OS_WIN32)
+    QxtCurrency(const CURRENCY &cy) : value(cy.int64) {}
+#endif
     // Construct from a string representation
     QxtCurrency(const QString &);
     QxtCurrency(const char *);
 
+    // Test for NULL
+    bool isNull() const;
+    // Set to NULL
+    void setNull();
+
     // Conversions
-    // Convert to a boolean (test for non-zero)
+    // Convert to a boolean (test for valid non-zero value)
     operator bool() const;
     // Convert to a double.
     operator double() const;
     // Convert to an integer.
     operator int() const;
+#if defined(qdoc) || defined(Q_OS_WIN32)
+    // Convert to CURRENCY (Windows only)
+    operator CURRENCY() const;
+#endif
     // Convert to a string representation
     QByteArray toString() const;
     inline QString toQString() const
     {
 	return QString::fromLatin1(toString());
     }
+    // Store in a QVariant
+    QVariant toVariant() const;
     // Extract from a QVariant
     static QxtCurrency fromVariant(const QVariant &);
 
@@ -102,7 +114,10 @@ public:
     QxtCurrency operator+(const QxtCurrency &rhs) const
     {
 	QxtCurrency result;
-	result.value = value + rhs.value;
+	if(isNull())
+	    result.setNull();
+	else if(!rhs.isNull())
+	    result.value = value + rhs.value;
 	return result;
     }
     // Add an integer to a currency value
@@ -112,7 +127,10 @@ public:
     operator+(T &rhs) const
     {
 	QxtCurrency result;
-	result.value = value + static_cast<qlonglong>(rhs) * 10000;
+	if(!isNull())
+	    result.value = value + static_cast<qlonglong>(rhs) * 10000;
+	else
+	    result.setNull();
 	return result;
     }
 #endif
@@ -120,20 +138,27 @@ public:
     QxtCurrency operator+(double rhs) const
     {
 	QxtCurrency result;
-	result.value = value + qRound64(rhs * 10000);
+	if(!isNull())
+	    result.value = value + qRound64(rhs * 10000);
+	else
+	    result.setNull();
 	return result;
     }
     // Add a currency value in place
     QxtCurrency& operator+=(const QxtCurrency &rhs)
     {
-	value += rhs.value;
+	if(!isNull() && !rhs.isNull())
+	    value += rhs.value;
 	return *this;
     }
     // Subtract two currency values
     QxtCurrency operator-(const QxtCurrency &rhs) const
     {
 	QxtCurrency result;
-	result.value = value - rhs.value;
+	if(isNull())
+	    result.setNull();
+	else if(!rhs.isNull())
+	    result.value = value - rhs.value;
 	return result;
     }
     // Subtract an integer from a currency value
@@ -143,7 +168,10 @@ public:
     operator-(T &rhs) const
     {
 	QxtCurrency result;
-	result.value = value - static_cast<qlonglong>(rhs) * 10000LL;
+	if(!isNull())
+	    result.value = value - static_cast<qlonglong>(rhs) * 10000LL;
+	else
+	    result.setNull();
 	return result;
     }
 #endif
@@ -151,20 +179,27 @@ public:
     QxtCurrency operator-(double rhs) const
     {
 	QxtCurrency result;
-	result.value = value - qRound64(rhs * 10000.0);
+	if(!isNull())
+	    result.value = value - qRound64(rhs * 10000.0);
+	else
+	    result.setNull();
 	return result;
     }
     // Subtract a currency value in place
     QxtCurrency& operator-=(const QxtCurrency &rhs)
     {
-	value -= rhs.value;
+	if(!isNull() && !rhs.isNull())
+	    value -= rhs.value;
 	return *this;
     }
     // Multiply two currency values
     QxtCurrency operator*(const QxtCurrency &rhs) const
     {
 	QxtCurrency result;
-	result.value = value * rhs.value / 10000LL;
+	if(isNull())
+	    result.setNull();
+	else if(!rhs.isNull())
+	    result.value = value * rhs.value / 10000LL;
 	return result;
     }
     // Multiply a currency value by an integer
@@ -174,7 +209,10 @@ public:
     operator*(T &rhs) const
     {
 	QxtCurrency result;
-	result.value = value * static_cast<qlonglong>(rhs);
+	if(!isNull())
+	    result.value = value * static_cast<qlonglong>(rhs);
+	else
+	    result.setNull();
 	return result;
     }
 #endif
@@ -182,20 +220,27 @@ public:
     QxtCurrency operator*(double rhs) const
     {
 	QxtCurrency result;
-	result.value = qRound64(value * rhs);
+	if(isNull())
+	    result.setNull();
+	else
+	    result.value = qRound64(value * rhs);
 	return result;
     }
     // Multiply a currency value in place
     QxtCurrency& operator*=(const QxtCurrency &rhs)
     {
-	value = value * rhs.value / 10000LL;
+	if(!isNull() && !rhs.isNull())
+	    value = value * rhs.value / 10000LL;
 	return *this;
     }
     // Divide two currency values
     QxtCurrency operator/(const QxtCurrency &rhs) const
     {
 	QxtCurrency result;
-	result.value = value / rhs.value * 10000LL;
+	if(isNull())
+	    result.setNull();
+	else if(!rhs.isNull())
+	    result.value = value / rhs.value * 10000LL;
 	return result;
     }
     // Divide a currency value by an integer
@@ -205,7 +250,10 @@ public:
     operator/(T &rhs) const
     {
 	QxtCurrency result;
-	result.value = value / static_cast<qlonglong>(rhs);
+	if(isNull())
+	    result.setNull();
+	else
+	    result.value = value / static_cast<qlonglong>(rhs);
 	return result;
     }
 #endif
@@ -213,13 +261,17 @@ public:
     QxtCurrency operator/(double rhs) const
     {
 	QxtCurrency result;
-	result.value = qRound64(double(value) / rhs);
+	if(isNull())
+	    result.setNull();
+	else
+	    result.value = qRound64(double(value) / rhs);
 	return result;
     }
     // Divide a currency value in place
     QxtCurrency& operator/=(const QxtCurrency &rhs)
     {
-	value = value / rhs.value * 10000LL;
+	if(!isNull() && !rhs.isNull())
+	    value = value / rhs.value * 10000LL;
 	return *this;
     }
 
@@ -249,8 +301,13 @@ public:
     QxtCurrency abs() const;
     // Clamp value to a range
     QxtCurrency & clamp(const QxtCurrency &l, const QxtCurrency &h);
+    QxtCurrency & clamp(const Pair &r);
     // Clamp value to a range
     QxtCurrency clamped(const QxtCurrency &l, const QxtCurrency &h) const;
+    QxtCurrency clamped(const Pair &r) const;
+    // Normalize (strip null)
+    QxtCurrency & normalize();
+    QxtCurrency normalized() const;
     // Round a value
     QxtCurrency round(int n=2) const;
     // Get the sign of the value
@@ -261,7 +318,8 @@ public:
     // Insert into output stream
     friend QTextStream & operator<<(QTextStream &strm, const QxtCurrency &v)
     {
-	strm << v.toString();
+	if(!v.isNull())
+	    strm << v.toString();
 	return strm;
     }
     // Insert into output stream
@@ -269,12 +327,16 @@ public:
     friend std::basic_ostream<_CharT, _Traits> & operator<<(
 	    std::basic_ostream<_CharT, _Traits> &strm, const QxtCurrency &v)
     {
-	strm << v.toString().constData();
+	if(!v.isNull())
+	    strm << v.toString().constData();
 	return strm;
     }
 
     friend QDataStream &operator<<(QDataStream &out, const QxtCurrency &v);
     friend QDataStream &operator>>(QDataStream &in, QxtCurrency &v);
+#if defined(qdoc) || !defined(QT_NO_DEBUG)
+    friend QDebug operator<<(QDebug dbg, const QxtCurrency &v);
+#endif
 
     // Determine amortized payment amount
     static QxtCurrency amortizedPayment(const QxtCurrency& P, double r, int n);
@@ -282,7 +344,6 @@ public:
     {
 	return amortizedPayment(*this, r, n);
     }
-    typedef QPair<QxtCurrency,QxtCurrency> Pair;
     // Determine total amortized interest amount and final payment
     static Pair amortizedInterest(QxtCurrency P, double r, int n,
 	    const QxtCurrency &p);
@@ -306,126 +367,6 @@ private:
     void parseASCII(const char *);
 };
 Q_DECLARE_METATYPE(QxtCurrency)
-#ifndef QT_NO_DEBUG
-QDebug operator<<(QDebug dbg, const QxtCurrency &v);
-#endif
-
-inline QxtCurrency QxtCurrency::abs() const
-{
-    return (*this < 0) ? -*this : *this;
-}
-
-inline QxtCurrency::operator bool() const
-{
-    return value ? true : false;
-}
-
-inline QxtCurrency::operator double() const
-{
-    return double(value) / 10000.0;
-}
-
-inline QxtCurrency::operator int() const
-{
-    return int(value / 10000LL);
-}
-
-inline QxtCurrency operator-(const QxtCurrency &rhs)
-{
-    QxtCurrency result;
-    result.value = -rhs.value;
-    return result;
-}
-
-inline bool operator<(const QxtCurrency &lhs, const QxtCurrency &rhs)
-{
-    return lhs.value < rhs.value;
-}
-
-inline bool operator>(const QxtCurrency &lhs, const QxtCurrency &rhs)
-{
-    return lhs.value > rhs.value;
-}
-
-inline bool operator<=(const QxtCurrency &lhs, const QxtCurrency &rhs)
-{
-    return lhs.value <= rhs.value;
-}
-
-inline bool operator>=(const QxtCurrency &lhs, const QxtCurrency &rhs)
-{
-    return lhs.value >= rhs.value;
-}
-
-inline bool operator==(const QxtCurrency &lhs, const QxtCurrency &rhs)
-{
-    return lhs.value == rhs.value;
-}
-
-inline bool operator!=(const QxtCurrency &lhs, const QxtCurrency &rhs)
-{
-    return lhs.value != rhs.value;
-}
-
-inline bool operator<(const QxtCurrency &lhs, int rhs)
-{
-    return lhs.value < (rhs * 10000LL);
-}
-
-inline bool operator>(const QxtCurrency &lhs, int rhs)
-{
-    return lhs.value > (rhs * 10000LL);
-}
-
-inline bool operator<=(const QxtCurrency &lhs, int rhs)
-{
-    return lhs.value <= (rhs * 10000LL);
-}
-
-inline bool operator>=(const QxtCurrency &lhs, int rhs)
-{
-    return lhs.value >= (rhs * 10000LL);
-}
-
-inline bool operator==(const QxtCurrency &lhs, int rhs)
-{
-    return lhs == QxtCurrency(rhs);
-}
-
-inline bool operator!=(const QxtCurrency &lhs, int rhs)
-{
-    return lhs != QxtCurrency(rhs);
-}
-
-inline bool operator<(const QxtCurrency &lhs, double rhs)
-{
-    return lhs.value < rhs * 10000.0;
-}
-
-inline bool operator>(const QxtCurrency &lhs, double rhs)
-{
-    return lhs.value > rhs * 10000.0;
-}
-
-inline bool operator<=(const QxtCurrency &lhs, double rhs)
-{
-    return lhs.value <= rhs * 10000.0;
-}
-
-inline bool operator>=(const QxtCurrency &lhs, double rhs)
-{
-    return lhs.value >= rhs * 10000.0;
-}
-
-inline bool operator==(const QxtCurrency &lhs, double rhs)
-{
-    return lhs == QxtCurrency(rhs);
-}
-
-inline bool operator!=(const QxtCurrency &lhs, double rhs)
-{
-    return lhs != QxtCurrency(rhs);
-}
 
 namespace std {
     inline QxtCurrency abs(const QxtCurrency &v)
@@ -474,7 +415,7 @@ namespace std {
       static QxtCurrency infinity() throw()
       { return static_cast<QxtCurrency>(0); }
       static QxtCurrency quiet_NaN() throw()
-      { return static_cast<QxtCurrency>(0); }
+      { return static_cast<QxtCurrency>(qlonglong(0x8000000000000000LL)); }
       static QxtCurrency signaling_NaN() throw()
       { return static_cast<QxtCurrency>(0); }
       static QxtCurrency denorm_min() throw()
@@ -489,5 +430,191 @@ namespace std {
       static const float_round_style round_style = round_toward_zero;
     };
 }
+
+inline bool QxtCurrency::isNull() const
+{
+    return value == std::numeric_limits<QxtCurrency>::quiet_NaN().value;
+}
+
+inline void QxtCurrency::setNull()
+{
+    value = std::numeric_limits<QxtCurrency>::quiet_NaN().value;
+}
+
+inline QxtCurrency QxtCurrency::abs() const
+{
+    if(*this)
+	return (*this < 0) ? -*this : *this;
+    else
+	return QxtCurrency();
+}
+
+inline QxtCurrency::operator bool() const
+{
+    return (value & 0x7fffffffffffffffLL) != 0;
+}
+
+inline QxtCurrency::operator double() const
+{
+    if(!isNull())
+	return double(value) / 10000.0;
+    else
+	return 0.0;
+}
+
+inline QxtCurrency::operator int() const
+{
+    if(!isNull())
+	return int(value / 10000LL);
+    else
+	return 0;
+}
+
+#if defined(qdoc) || defined(Q_OS_WIN32)
+inline QxtCurrency::operator CURRENCY() const
+{
+    CURRENCY result;
+    result.int64 = normalized().value;
+    return result;
+}
+#endif
+
+inline QxtCurrency & QxtCurrency::clamp(const Pair &r)
+{
+    return clamp(r.first, r.second);
+}
+
+inline QxtCurrency QxtCurrency::clamped(const Pair &r) const
+{
+    return clamped(r.first, r.second);
+}
+
+inline QVariant QxtCurrency::toVariant() const
+{
+    if(isNull())
+	return QVariant(qMetaTypeId<QxtCurrency>(), (const void *)0);
+    return QVariant::fromValue(*this);
+}
+
+inline QxtCurrency operator-(const QxtCurrency &rhs)
+{
+    QxtCurrency result(rhs);
+    if(!result.isNull())
+	result.value = -rhs.value;
+    return result;
+}
+
+inline QxtCurrency & QxtCurrency::normalize()
+{
+    if(isNull())
+	value = 0;
+    return *this;
+}
+
+inline QxtCurrency QxtCurrency::normalized() const
+{
+    return isNull() ? QxtCurrency() : *this;
+}
+
+inline bool operator<(const QxtCurrency &lhs, const QxtCurrency &rhs)
+{
+    return lhs.normalized().value < rhs.normalized().value;
+}
+
+inline bool operator>(const QxtCurrency &lhs, const QxtCurrency &rhs)
+{
+    return lhs.normalized().value > rhs.normalized().value;
+}
+
+inline bool operator<=(const QxtCurrency &lhs, const QxtCurrency &rhs)
+{
+    return lhs.normalized().value <= rhs.normalized().value;
+}
+
+inline bool operator>=(const QxtCurrency &lhs, const QxtCurrency &rhs)
+{
+    return lhs.normalized().value >= rhs.normalized().value;
+}
+
+inline bool operator==(const QxtCurrency &lhs, const QxtCurrency &rhs)
+{
+    return lhs.normalized().value == rhs.normalized().value;
+}
+
+inline bool operator!=(const QxtCurrency &lhs, const QxtCurrency &rhs)
+{
+    return lhs.normalized().value != rhs.normalized().value;
+}
+
+inline bool operator<(const QxtCurrency &lhs, int rhs)
+{
+    return lhs.normalized().value < (rhs * 10000LL);
+}
+
+inline bool operator>(const QxtCurrency &lhs, int rhs)
+{
+    return lhs.normalized().value > (rhs * 10000LL);
+}
+
+inline bool operator<=(const QxtCurrency &lhs, int rhs)
+{
+    return lhs.normalized().value <= (rhs * 10000LL);
+}
+
+inline bool operator>=(const QxtCurrency &lhs, int rhs)
+{
+    return lhs.normalized().value >= (rhs * 10000LL);
+}
+
+inline bool operator==(const QxtCurrency &lhs, int rhs)
+{
+    return lhs.normalized() == QxtCurrency(rhs);
+}
+
+inline bool operator!=(const QxtCurrency &lhs, int rhs)
+{
+    return lhs.normalized() != QxtCurrency(rhs);
+}
+
+inline bool operator<(const QxtCurrency &lhs, double rhs)
+{
+    return lhs.normalized().value < rhs * 10000.0;
+}
+
+inline bool operator>(const QxtCurrency &lhs, double rhs)
+{
+    return lhs.normalized().value > rhs * 10000.0;
+}
+
+inline bool operator<=(const QxtCurrency &lhs, double rhs)
+{
+    return lhs.normalized().value <= rhs * 10000.0;
+}
+
+inline bool operator>=(const QxtCurrency &lhs, double rhs)
+{
+    return lhs.normalized().value >= rhs * 10000.0;
+}
+
+inline bool operator==(const QxtCurrency &lhs, double rhs)
+{
+    return lhs.normalized() == QxtCurrency(rhs);
+}
+
+inline bool operator!=(const QxtCurrency &lhs, double rhs)
+{
+    return lhs.normalized() != QxtCurrency(rhs);
+}
+
+#if defined(qdoc) || !defined(QT_NO_DEBUG)
+inline QDebug operator<<(QDebug dbg, const QxtCurrency &v)
+{
+    if(v.isNull())
+	dbg.nospace() << "QxtCurrency(null)";
+    else
+	dbg.nospace() << "QxtCurrency(" << v.toString() << ')';
+    return dbg.space();
+}
+#endif
 
 #endif // QXTCURRENCY_H
