@@ -33,7 +33,8 @@
 #ifndef QT_NO_DEBUG
 #include <QDebug>
 #endif
-
+#include <stdlib.h>
+#include <stdint.h>
 /*!
  *  \class QxtCurrency
  *  \inmodule QxtCore
@@ -445,6 +446,10 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
   Constructs a currency object from a pre-adjusted integer value \a v. The
   value is expected to already assume 4 decimal places so you should first
   multiply by 10000LL if this is not the case.
+
+  \warning This constructor is probably ill-advised. At least as documented.
+  Propose a static method for this conversion which takes a CY and enabled
+  for Windows. A corresponding operator CY() should also be considered.
 */
 
 /*! \fn QxtCurrency QxtCurrency::abs() const
@@ -511,14 +516,11 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 /*! \fn QxtCurrency QxtCurrency::operator+(const QxtCurrency &rhs) const
 
     Returns the result of adding the value \a rhs to the current value.
-*/
-
-/*! \fn QxtCurrency QxtCurrency::operator+(int rhs) const
-    \overload
+    Various overrides are also provided for integral and floating point values.
 */
 
 /*! \fn QxtCurrency QxtCurrency::operator+(double rhs) const
-    \overload
+    \internal
 */
 
 /*! \fn QxtCurrency& QxtCurrency::operator+=(const QxtCurrency &rhs)
@@ -530,14 +532,11 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 
     Returns the result of subtracting the value \a rhs from the current
     value.
-*/
-
-/*! \fn QxtCurrency QxtCurrency::operator-(int rhs) const
-    \overload
+    Various overrides are also provided for integral and floating point values.
 */
 
 /*! \fn QxtCurrency QxtCurrency::operator-(double rhs) const
-    \overload
+    \internal
 */
 
 /*! \fn QxtCurrency& QxtCurrency::operator-=(const QxtCurrency &rhs)
@@ -549,14 +548,11 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 /*! \fn QxtCurrency QxtCurrency::operator*(const QxtCurrency &rhs) const
 
     Returns the result of multiplying the current value by \a rhs.
-*/
-
-/*! \fn QxtCurrency& QxtCurrency::operator*(int rhs) const
-    \overload
+    Various overrides are also provided for integral and floating point values.
 */
 
 /*! \fn QxtCurrency& QxtCurrency::operator*(double rhs) const
-    \overload
+    \internal
 */
 
 /*! \fn QxtCurrency& QxtCurrency::operator*=(const QxtCurrency &rhs)
@@ -567,14 +563,11 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 /*! \fn QxtCurrency QxtCurrency::operator/(const QxtCurrency &rhs) const
 
     Returns the result of dividing the current value by \a rhs.
-*/
-
-/*! \fn QxtCurrency QxtCurrency::operator/(int rhs) const
-    \overload
+    Various overrides are also provided for integral and floating point values.
 */
 
 /*! \fn QxtCurrency QxtCurrency::operator/(double rhs) const
-    \overload
+    \internal
 */
 
 /*! \fn QxtCurrency& QxtCurrency::operator/=(const QxtCurrency &rhs)

@@ -39,6 +39,8 @@
 #include <limits>
 #include <QVariant>
 #include <QTextStream>
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 // Supporting functions
@@ -104,12 +106,16 @@ public:
 	return result;
     }
     // Add an integer to a currency value
-    QxtCurrency operator+(int rhs) const
+#ifndef qdoc
+    template<typename T>
+    typename boost::enable_if<boost::is_integral<T>, QxtCurrency>::type
+    operator+(T &rhs) const
     {
 	QxtCurrency result;
 	result.value = value + static_cast<qlonglong>(rhs) * 10000;
 	return result;
     }
+#endif
     // Add a double to a currency value
     QxtCurrency operator+(double rhs) const
     {
@@ -131,12 +137,16 @@ public:
 	return result;
     }
     // Subtract an integer from a currency value
-    QxtCurrency operator-(int rhs) const
+#ifndef qdoc
+    template<typename T>
+    typename boost::enable_if<boost::is_integral<T>, QxtCurrency>::type
+    operator-(T &rhs) const
     {
 	QxtCurrency result;
 	result.value = value - static_cast<qlonglong>(rhs) * 10000LL;
 	return result;
     }
+#endif
     // Subtract a double from a currency value
     QxtCurrency operator-(double rhs) const
     {
@@ -158,12 +168,16 @@ public:
 	return result;
     }
     // Multiply a currency value by an integer
-    QxtCurrency operator*(int rhs) const
+#ifndef qdoc
+    template<typename T>
+    typename boost::enable_if<boost::is_integral<T>, QxtCurrency>::type
+    operator*(T &rhs) const
     {
 	QxtCurrency result;
 	result.value = value * static_cast<qlonglong>(rhs);
 	return result;
     }
+#endif
     // Multiply a currency value by a double
     QxtCurrency operator*(double rhs) const
     {
@@ -185,12 +199,16 @@ public:
 	return result;
     }
     // Divide a currency value by an integer
-    QxtCurrency operator/(int rhs) const
+#ifndef qdoc
+    template<typename T>
+    typename boost::enable_if<boost::is_integral<T>, QxtCurrency>::type
+    operator/(T &rhs) const
     {
 	QxtCurrency result;
 	result.value = value / static_cast<qlonglong>(rhs);
 	return result;
     }
+#endif
     // Divide a currency value by a double
     QxtCurrency operator/(double rhs) const
     {
