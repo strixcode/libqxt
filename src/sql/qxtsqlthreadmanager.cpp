@@ -1,6 +1,6 @@
 
 /****************************************************************************
-** Copyright (c) 2006 - 2011, the LibQxt project.
+** Copyright (c) 2006 - 2012, the LibQxt project.
 ** See the Qxt AUTHORS file for a list of authors and copyright holders.
 ** All rights reserved.
 **
@@ -99,20 +99,20 @@ connection which is already open.
 QxtSqlThreadManager::QxtSqlThreadManager(const QString &masterName)
 {
     // Build a name for the new connection
-    name = QString("$qxt$tc_%1$%2")
-	.arg((long)(void*)QThread::currentThreadId())
+    this->name = QString("$qxt$tc_%1$%2")
+	.arg((unsigned long)(void*)QThread::currentThreadId(), 0, 36)
 	.arg(masterName);
     // Clone the primary thread's connection
     Q_ASSERT(QSqlDatabase::contains(masterName));
     Q_ASSERT(QSqlDatabase::database(masterName).isOpen() == true);
     QSqlDatabase conn = QSqlDatabase::cloneDatabase(
-	    QSqlDatabase::database(masterName), name);
+	    QSqlDatabase::database(masterName), this->name);
     // Open the connection (should not fail but ...)
     if(!conn.open())
 	qWarning() << Q_FUNC_INFO
 	    << "Failed to open connection to database" << conn.databaseName()
 	    << ", error: " << conn.lastError().text();
-    qDebug() << "Constructed database connection" << name;
+    qDebug() << "Constructed database connection" << this->name;
 }
 
 /*! Destroys the connection being managed
