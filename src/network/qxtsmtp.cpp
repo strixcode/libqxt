@@ -209,6 +209,9 @@ void QxtSmtpPrivate::socketRead()
         case StartState:
             if (code[0] != '2')
             {
+                state = Disconnected;
+                emit qxt_p().connectionFailed();
+                emit qxt_p().connectionFailed(line);
                 socket->disconnectFromHost();
             }
             else
@@ -251,7 +254,7 @@ void QxtSmtpPrivate::socketRead()
                 state = Disconnected;
                 emit qxt_p().authenticationFailed();
                 emit qxt_p().authenticationFailed( line );
-                emit socket->disconnectFromHost();
+                socket->disconnectFromHost();
             }
             break;
         case MailToSent:
