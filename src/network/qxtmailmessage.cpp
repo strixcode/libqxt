@@ -287,7 +287,7 @@ QByteArray qxt_fold_mime_header(const QString& key, const QString& value, QTextC
             {
                 if (line.length() > 72)
                 {
-                    rv += line + "?\r\n";
+                    rv += line + "?=\r\n";
                     line = " =?utf-8?b?";
                 }
                 line = line + base64.mid(i, 4);
@@ -301,7 +301,7 @@ QByteArray qxt_fold_mime_header(const QString& key, const QString& value, QTextC
             {
                 if (line.length() > 73)
                 {
-                    rv += line + "?\r\n";
+                    rv += line + "?=\r\n";
                     line = " =?utf-8?q?";
                 }
                 if (QXT_MUST_QP(utf8[i]) || utf8[i] == ' ')
