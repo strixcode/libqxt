@@ -253,7 +253,8 @@ private:
     //! Parse from text
     void parseASCII(const char *);
 };
-Q_DECLARE_METATYPE(QxtCurrency)
+Q_DECLARE_TYPEINFO(QxtCurrency, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(QxtCurrency);
 
 namespace std {
     inline QxtCurrency abs(const QxtCurrency &v)
