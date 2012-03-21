@@ -429,7 +429,7 @@ void QxtHttpSessionManager::incomingRequest(quint32 requestID, const QHttpReques
         state.keepAlive = true;
     qxt_d().sessionLock.unlock();
 
-    QxtWebRequestEvent* event = new QxtWebRequestEvent(sessionID, requestID, QUrl(header.path()));
+    QxtWebRequestEvent* event = new QxtWebRequestEvent(sessionID, requestID, QUrl::fromEncoded(header.path().toUtf8()));
     qxt_d().eventLock.lock();
     qxt_d().pendingRequests.insert(QPair<int,int>(sessionID, requestID), event);
     qxt_d().eventLock.unlock();
