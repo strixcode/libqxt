@@ -40,9 +40,6 @@
 #include <QVariant>
 #include <QTextStream>
 #include <QDataStream>
-#if defined(qdoc) || !defined(QT_NO_DEBUG)
-#include <QDebug>
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // Supporting functions
@@ -221,7 +218,7 @@ public:
 
     friend QDataStream &operator<<(QDataStream &out, const QxtCurrency &v);
     friend QDataStream &operator>>(QDataStream &in, QxtCurrency &v);
-#if defined(qdoc) || !defined(QT_NO_DEBUG)
+#ifdef QDEBUG_H
     friend QDebug operator<<(QDebug dbg, const QxtCurrency &v);
 #endif
 
@@ -824,7 +821,7 @@ inline bool operator!=(double lhs, const QxtCurrency &rhs)
     return QxtCurrency(lhs) != rhs.normalized();
 }
 
-#if defined(qdoc) || !defined(QT_NO_DEBUG)
+#ifdef QDEBUG_H
 inline QDebug operator<<(QDebug dbg, const QxtCurrency &v)
 {
     if(v.isNull())

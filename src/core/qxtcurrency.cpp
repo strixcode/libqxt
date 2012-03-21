@@ -29,6 +29,7 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
+#include <QDebug>
 #include "qxtcurrency.h"
 #include <stdlib.h>
 #include <stdint.h>
@@ -139,10 +140,8 @@ QxtCurrency QxtCurrency::fromVariant(const QVariant &v)
 	default:
 	    if(v.userType() == qMetaTypeId<QxtCurrency>())
 		result = v.value<QxtCurrency>();
-#ifndef QT_NO_DEBUG
 	    else
 		qWarning() << "Conversion failure in QxtCurrency::fromVariant";
-#endif
 	}
     }
     return result;
