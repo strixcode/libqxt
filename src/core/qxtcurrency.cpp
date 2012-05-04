@@ -213,7 +213,11 @@ void QxtCurrency::parseASCII(const char *s)
 QByteArray QxtCurrency::toString() const
 {
     const int ndigs = std::numeric_limits<QxtCurrency>::digits10 + 5;
+#ifdef Q_OS_WIN32
+    char* buf = (char*)_alloca(ndigs);
+#else
     char* buf = (char*)alloca(ndigs);
+#endif
     memset(buf, 0, ndigs);
     char* const end = buf + ndigs - 2;
     bool neg = value < 0;
@@ -503,9 +507,10 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
 
 */
 
-/*! \fn QxtCurrency::QxtCurrency(const CURRENCY &v)
+/*! \fn QxtCurrency::QxtCurrency(const CY &v)
 
-    Constructs a currency object from a CURRENCY value \a v.
+    Constructs a currency object from a CY value \a v. This is identical to
+    CURRENCY.
 
     \warning This constructor is only available in Windows builds.
 */
@@ -564,9 +569,9 @@ QList<QxtCurrency::Pair> QxtCurrency::amortize(QxtCurrency P, double r, int n,
     simply truncated (i.e. no rounding is performed).
 */
 
-/*! \fn QxtCurrency::operator CURRENCY() const
+/*! \fn QxtCurrency::operator CY() const
 
-    Converts the value into a CURRENCY type.
+    Converts the value into a CY type. This is identical to CURRENCY.
 
     \warning This operator is only available in Windows builds.
 */

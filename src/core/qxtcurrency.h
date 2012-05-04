@@ -41,6 +41,10 @@
 #include <QTextStream>
 #include <QDataStream>
 
+#if defined(Q_OS_WIN32) && defined(_CY_DEFINED)
+#define QXT_HAVE_OLE_CURRENCY
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // Supporting functions
 
@@ -68,8 +72,8 @@ public:
     }
     // Construct via a 8-byte integer.
     explicit QxtCurrency(qlonglong v) : value(v) {}
-#if defined(qdoc) || defined(Q_OS_WIN32)
-    QxtCurrency(const CURRENCY &cy) : value(cy.int64) {}
+#if defined(qdoc) || defined(QXT_HAVE_OLE_CURRENCY)
+    QxtCurrency(const CY &cy) : value(cy.int64) {}
 #endif
     // Construct from a string representation
     QxtCurrency(const QString &);
@@ -87,9 +91,14 @@ public:
     operator double() const;
     // Convert to an integer.
     operator int() const;
-#if defined(qdoc) || defined(Q_OS_WIN32)
+#if defined(qdoc) || defined(QXT_HAVE_OLE_CURRENCY)
     // Convert to CURRENCY (Windows only)
-    operator CURRENCY() const;
+    inline operator CY() const
+    {
+	CY cy;
+	cy.int64 = value;
+	return cy;
+    }
 #endif
     // Convert to a string representation
     QByteArray toString() const;
