@@ -220,7 +220,7 @@ QByteArray QxtCurrency::toString() const
     qlonglong v = ::llabs(value);
     if(v < 0)
 	v = numeric_limits<qlonglong>::max();
-#if defined(Q_OS_WIN32)
+#ifndef Q_CC_GNU
     register int decp = 4;
 #else
     int_fast8_t decp = 4;
@@ -266,7 +266,11 @@ QxtCurrency QxtCurrency::round(int n) const
     else if(n > 3)
 	return *this;
     // Determine decimal shift required
+#ifdef Q_CC_GNU
     qlonglong modv = llrint(exp10(4-n));
+#else
+    qlonglong modv = qRound64(pow(10.0, 4-n));
+#endif
     QxtCurrency result;
     // Compute fractional value and subtract it
     qlonglong frac = value % modv;
