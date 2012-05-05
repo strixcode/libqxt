@@ -190,6 +190,8 @@ public:
 
     // Miscellany
 
+    // Get null value
+    static QxtCurrency null();
     // Get absolute value
     QxtCurrency abs() const;
     // Clamp value to a range
@@ -267,7 +269,7 @@ namespace std {
     {
 	return v.abs();
     }
-    /*! Numeric limits information for QiCurrency class. Essentially the
+    /*! Numeric limits information for QxtCurrency class. Essentially the
      *	same as std::numeric_limits<long long>
      */
     template<>
@@ -301,7 +303,7 @@ namespace std {
       static const int max_exponent10 = 0;
 
       static const bool has_infinity = false;
-      static const bool has_quiet_NaN = false;
+      static const bool has_quiet_NaN = true;
       static const bool has_signaling_NaN = false;
       static const float_denorm_style has_denorm = denorm_absent;
       static const bool has_denorm_loss = false;
@@ -335,6 +337,11 @@ inline void QxtCurrency::setNull()
     value = std::numeric_limits<QxtCurrency>::quiet_NaN().value;
 }
 
+inline QxtCurrency QxtCurrency::null()
+{
+    return std::numeric_limits<QxtCurrency>::quiet_NaN();
+}
+
 inline QxtCurrency QxtCurrency::abs() const
 {
     if(*this)
@@ -365,9 +372,9 @@ inline QxtCurrency::operator int() const
 }
 
 #if defined(qdoc) || defined(Q_OS_WIN32)
-inline QxtCurrency::operator CURRENCY() const
+inline QxtCurrency::operator CY() const
 {
-    CURRENCY result;
+    CY result;
     result.int64 = normalized().value;
     return result;
 }

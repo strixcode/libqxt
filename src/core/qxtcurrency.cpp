@@ -49,7 +49,7 @@
  *  decimal places with an effective range of
  *  \bold -922,337,203,685,477.5807 to \bold 922,337,203,685,477.5807
  *  (inclusive). The actual lowest value is reserved to indicate a NULL
- *  status. This type is equivalent to the CURRENCY type in Microsoft
+ *  status. This type is equivalent to the CY / CURRENCY type in Microsoft
  *  Windows and support for these values is provided in that environment.
  *
  *  Specializations for \c std::abs and \c std::numeric_limits are
