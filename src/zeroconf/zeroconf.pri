@@ -13,14 +13,16 @@ SOURCES += qxtservicebrowser.cpp
 SOURCES += qxtdiscoverableservicename.cpp
 
 !contains(CONFIG,NO_AVAHI): unix : !macx {
+        INCLUDEPATH += $$PWD/avahi
         DEFINES += USE_AVAHI
-        SOURCES += qxtmdns_avahi.cpp
-        SOURCES += qxtavahipoll.cpp
-        HEADERS += qxtmdns_avahi.h
-        HEADERS += qxtmdns_avahi_p.h
-        HEADERS += qxtavahipoll.h
-        HEADERS += qxtavahipoll_p.h
+        SOURCES += avahi/qxtmdns_avahi.cpp
+        SOURCES += avahi/qxtavahipoll.cpp
+        HEADERS += avahi/qxtmdns_avahi.h
+        HEADERS += avahi/qxtmdns_avahi_p.h
+        HEADERS += avahi/qxtavahipoll.h
+        HEADERS += avahi/qxtavahipoll_p.h
 } else {
-        SOURCES += qxtmdns_bonjour.cpp
-        HEADERS += qxtmdns_bonjour.h
+        INCLUDEPATH += $$PWD/bonjour
+        SOURCES += bonjour/qxtmdns_bonjour.cpp
+        HEADERS += bonjour/qxtmdns_bonjour.h
 }

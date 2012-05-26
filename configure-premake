@@ -1,0 +1,32 @@
+#!/bin/sh
+
+this=$(dirname $(readlink -f $0))
+
+premake=
+
+case "$(uname -s)" in
+    Linux)
+        case "$(uname -m)" in
+            x86_64)
+                premake=${this}/premake/premake4.x86_64
+                ;;
+            *86*)
+                premake=${this}/premake/premake4.i686
+                ;;
+            *)
+                echo "we have no premake binary for architecture $(uname -m), "\
+                     "you'll have to build your own premake4. sorry."
+                ;;
+        esac
+        ;;
+    Darwin)
+        premake=${this}/premake/premake4.darwin
+        ;;
+    *)
+        echo "we have no premake binary for system $(uname -s), "\
+             "you'll have to build your own premake4. sorry."
+        ;;
+esac
+
+${premake} --file=${this}/premake/premake4.lua --to=$(pwd) $@
+

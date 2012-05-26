@@ -20,7 +20,6 @@ HEADERS  += qxtdatastreamsignalserializer.h
 HEADERS  += qxtdeplex.h
 HEADERS  += qxtdeplex_p.h
 HEADERS  += qxterror.h
-HEADERS  += qxtfifo.h
 HEADERS  += qxtglobal.h
 HEADERS  += qxthmac.h
 HEADERS  += qxtjson.h
@@ -77,7 +76,6 @@ SOURCES  += qxtdaemon.cpp
 SOURCES  += qxtdatastreamsignalserializer.cpp
 SOURCES  += qxtdeplex.cpp
 SOURCES  += qxterror.cpp
-SOURCES  += qxtfifo.cpp
 SOURCES  += qxtglobal.cpp
 SOURCES  += qxthmac.cpp
 SOURCES  += qxtlocale.cpp
@@ -115,17 +113,16 @@ SOURCES  += qxtxmlfileloggerengine.cpp
     SOURCES  += qxtfilelock.cpp
 
     unix {
-        HEADERS  += qxtserialdevice.h
-        HEADERS  += qxtserialdevice_p.h
-
-        SOURCES  += qxtfilelock_unix.cpp
-        SOURCES  += qxtserialdevice.cpp
-        SOURCES  += qxtserialdevice_unix.cpp
-        SOURCES  += qxttemporarydir_unix.cpp
+        HEADERS  += unix/qxtserialdevice.h
+        HEADERS  += unix/qxtserialdevice_p.h
+        SOURCES  += unix/qxtfilelock_unix.cpp
+        SOURCES  += unix/qxtserialdevice.cpp
+        SOURCES  += unix/qxtserialdevice_unix.cpp
+        SOURCES  += unix/qxttemporarydir_unix.cpp
     }
     
     win32 {
-        SOURCES  += qxtfilelock_win.cpp
-        SOURCES  += qxttemporarydir_win.cpp
+        SOURCES  += win/qxtfilelock_win.cpp
+        SOURCES  += win/qxttemporarydir_win.cpp
     }
 }

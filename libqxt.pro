@@ -9,6 +9,9 @@ TEMPLATE = subdirs
 DESTDIR  = lib
 
 #check Qt version
+greaterThan(QT_MAJOR_VERSION, 4) {
+     error(Building libqxt with qmake only works with Qt4. Use configure-premake instead.)
+}
 lessThan(QT_MAJOR_VERSION, 4) | lessThan(QT_MINOR_VERSION, 3) {
    error(LibQxt requires Qt 4.3 or newer but Qt $$[QT_VERSION] was detected.)
 }
@@ -53,9 +56,9 @@ contains( QXT_MODULES, sql ){
 }
 
 !symbian:contains(DEFINES,HAVE_DB){
-contains( QXT_MODULES, berkeley ){
-    message( building berkeley module )
-    sub_berkeley.subdir = src/berkeley
+contains( QXT_MODULES, bdb ){
+    message( building bdb module )
+    sub_berkeley.subdir = src/bdb
     sub_berkeley.depends = sub_core
     SUBDIRS += sub_berkeley
 }

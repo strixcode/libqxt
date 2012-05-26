@@ -60,22 +60,36 @@ QxtFifo fifo;
 
 #include <qatomic.h>
 
-#if QT_VERSION >= 0x040400
+#if QT_VERSION >= 0x50000
+# define QXT_EXCHANGE(x) fetchAndStoreOrdered(x)
+# define QXT_EXCHANGE_(x) fetchAndStoreOrdered(x.load())
+# define QXT_ADD fetchAndAddOrdered
+#elif QT_VERSION >= 0x040400
 # include <qbasicatomic.h>
 # define QXT_EXCHANGE fetchAndStoreOrdered
+# define QXT_EXCHANGE_ QXT_EXCHANGE
 # define QXT_ADD fetchAndAddOrdered
 #else
   typedef QBasicAtomic QBasicAtomicInt;
 # define QXT_EXCHANGE exchange
+# define QXT_EXCHANGE_ QXT_EXCHANGE
 # define QXT_ADD fetchAndAdd
 #endif
 
 struct QxtFifoNode {
     QxtFifoNode(const char* data, int size) : content(data, size) {
+#if QT_VERSION >= 0x50000
+        next.store(0);
+#else
         next = NULL;
+#endif
     }
     QxtFifoNode(const QByteArray &data) : content(data) {
+#if QT_VERSION >=  0x50000
+        next.store(0);
+#else
         next = NULL;
+#endif
     }
    
     QByteArray content;
@@ -86,8 +100,20 @@ class QxtFifoPrivate : public QxtPrivate<QxtFifo> {
 public:
     QXT_DECLARE_PUBLIC(QxtFifo)
     QxtFifoPrivate() {
-        head = tail = new QxtFifoNode(NULL, 0);
+        QxtFifoNode *n = new QxtFifoNode(NULL, 0);
+#if QT_VERSION >=  0x50000
+        head.store(n);
+        tail.store(n);
+#else
+        head = n;
+        tail = n;
+#endif
+
+#if QT_VERSION >=  0x50000
+        available.store(0);
+#else
         available = 0;
+#endif
     }
 
     QBasicAtomicPointer<QxtFifoNode> head, tail;
@@ -111,8 +137,17 @@ QxtFifo::QxtFifo(const QByteArray &prime, QObject *parent) : QIODevice(parent)
     QXT_INIT_PRIVATE(QxtFifo);
     setOpenMode(QIODevice::ReadWrite);
     // Since we're being constructed, access to the internals is safe
-    qxt_d().head->content = prime;
-    qxt_d().available = prime.size();
+
+    QxtFifoNode *head;
+    int available;
+#if QT_VERSION >=  0x50000
+    head = qxt_d().head.load();
+    available = qxt_d().available.load();
+#else
+    head = qxt_d().head;
+    available = qxt_d().available;
+#endif
+
 }
 
 /*!
@@ -120,14 +155,27 @@ QxtFifo::QxtFifo(const QByteArray &prime, QObject *parent) : QIODevice(parent)
 */
 qint64 QxtFifo::readData ( char * data, qint64 maxSize )
 {
-    int bytes = qxt_d().available, step;
+    int bytes, step;
+#if QT_VERSION >=  0x50000
+    bytes = qxt_d().available.load();
+#else
+    bytes =  qxt_d().available;
+#endif
+
+
     if(!bytes) return 0;
     if(bytes > maxSize) bytes = maxSize;
     int written = bytes;
     char* writePos = data;
     QxtFifoNode* node;
     while(bytes > 0) {
+
+#if QT_VERSION >=  0x50000
+        node = qxt_d().head.load();
+#else
         node = qxt_d().head;
+#endif
+
         step = node->content.size();
         if(step >= bytes) {
             int rem = step - bytes;
@@ -136,9 +184,13 @@ qint64 QxtFifo::readData ( char * data, qint64 maxSize )
             node->content = node->content.right(rem);
         } else {
             memcpy(writePos, node->content.constData(), step);
-            qxt_d().head.QXT_EXCHANGE(node->next);
+            qxt_d().head.QXT_EXCHANGE_(node->next);
             delete node;
+#if QT_VERSION >=  0x50000
+            node = qxt_d().head.load();
+#else
             node = qxt_d().head;
+#endif
         }
         writePos += step;
         bytes -= step;
@@ -155,7 +207,11 @@ qint64 QxtFifo::writeData ( const char * data, qint64 maxSize )
     if(maxSize > 0) {
         if(maxSize > INT_MAX) maxSize = INT_MAX; // qint64 could easily exceed QAtomicInt, so let's play it safe
         QxtFifoNode* newData = new QxtFifoNode(data, maxSize);
+#if QT_VERSION >=  0x50000
+        qxt_d().tail.load()->next.QXT_EXCHANGE(newData);
+#else
         qxt_d().tail->next.QXT_EXCHANGE(newData);
+#endif
         qxt_d().tail.QXT_EXCHANGE(newData);
         qxt_d().available.QXT_ADD(maxSize);
         QMetaObject::invokeMethod(this, "bytesWritten", Qt::QueuedConnection, Q_ARG(qint64, maxSize));
@@ -177,7 +233,11 @@ bool QxtFifo::isSequential () const
 */
 qint64 QxtFifo::bytesAvailable () const
 {
+#if QT_VERSION >=  0x50000
+    return qxt_d().available.load();
+#else
     return qxt_d().available;
+#endif
 }
 
 /*!
@@ -185,13 +245,27 @@ qint64 QxtFifo::bytesAvailable () const
 void QxtFifo::clear()
 {
     qxt_d().available.QXT_EXCHANGE(0);
-    qxt_d().tail.QXT_EXCHANGE(qxt_d().head);
+    qxt_d().tail.QXT_EXCHANGE_(qxt_d().head);
+
+#if QT_VERSION >=  0x50000
+    QxtFifoNode* node = qxt_d().head.load()->next.QXT_EXCHANGE(NULL);
+#else
     QxtFifoNode* node = qxt_d().head->next.QXT_EXCHANGE(NULL);
+#endif
+
+#if QT_VERSION >=  0x50000
+    while (node && node->next.load())
+#else
     while (node && node->next)
+#endif
     {
         QxtFifoNode* next = node->next.QXT_EXCHANGE(NULL);
         delete node;
         node = next;
     }
+#if QT_VERSION >=  0x50000
+    qxt_d().head.load()->content = QByteArray();
+#else
     qxt_d().head->content = QByteArray();
+#endif
 }

@@ -370,7 +370,7 @@ int QxtHttpSessionManager::newSession()
     }
     while (qxt_d().sessionKeys.contains(key));
     qxt_d().sessionKeys[key] = sessionID;
-    postEvent(new QxtWebStoreCookieEvent(sessionID, qxt_d().sessionCookieName, key));
+    postEvent(new QxtWebStoreCookieEvent(sessionID, qxt_d().sessionCookieName, key.toString()));
     return sessionID;
 }
 

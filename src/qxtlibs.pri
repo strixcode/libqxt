@@ -23,10 +23,10 @@ contains(QXT, web) {
     QT  += network
 }
 
-contains(QXT, gui) {
-    qxtAddLibrary(gui, QxtGui)
+contains(QXT, widgets) {
+    qxtAddLibrary(widgets, QxtWidgets)
     QXT += core
-    QT  += gui
+    QT  += gui widgets
 }
 
 contains(QXT, network) {

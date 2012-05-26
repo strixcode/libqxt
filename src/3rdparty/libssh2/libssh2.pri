@@ -20,7 +20,6 @@ SOURCES += $$PWD/libssh2/src/agent.c \
            $$PWD/libssh2/src/publickey.c \
            $$PWD/libssh2/src/scp.c \
            $$PWD/libssh2/src/session.c \
-           $$PWD/libssh2/src/sftp.c \
            $$PWD/libssh2/src/transport.c \
            $$PWD/libssh2/src/userauth.c \
            $$PWD/libssh2/src/version.c 

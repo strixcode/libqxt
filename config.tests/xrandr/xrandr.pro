@@ -1,6 +1,6 @@
 win32:include(../../depends.pri)
 TEMPLATE = app
-TARGET = 
+TARGET = xrandr
 DEPENDPATH += .
 INCLUDEPATH += .
 SOURCES += main.cpp

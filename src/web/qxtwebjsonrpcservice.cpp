@@ -85,7 +85,11 @@ void QxtWebJsonRPCService::Private::initTables(QObject *in)
 
         QxtWebJsonRPCService::Private::Method method;
         QMetaMethod mo = po->method (i);
+#if QT_VERSION >=  0x50000
+        method.name = QByteArray(mo.methodSignature()).split('(').at(0);
+#else
         method.name = QByteArray(mo.signature()).split('(').at(0);
+#endif
         method.meta = mo;
         method.argCount = mo.parameterTypes ().count();
         method.returns = QByteArray(mo.typeName()).count();

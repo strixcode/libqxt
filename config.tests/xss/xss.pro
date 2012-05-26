@@ -1,7 +1,7 @@
 win32:include(../../depends.pri)
 CONFIG -= app_bundle
 TEMPLATE = app
-TARGET = 
+TARGET = xss
 DEPENDPATH += .
 INCLUDEPATH += .
 SOURCES += main.cpp

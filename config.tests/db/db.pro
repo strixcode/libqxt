@@ -1,6 +1,6 @@
 CONFIG -= app_bundle
 TEMPLATE = app
-TARGET = 
+TARGET = db
 DEPENDPATH += .
 INCLUDEPATH += .
 SOURCES += main.cpp

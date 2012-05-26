@@ -35,7 +35,8 @@
 #include "qxtabstractwebsessionmanager.h"
 #include "qxtabstracthttpconnector.h"
 #include <QHostAddress>
-#include <QHttpHeader>
+#include "qhttpheader.h"
+
 class QxtWebEvent;
 class QxtWebContent;
 

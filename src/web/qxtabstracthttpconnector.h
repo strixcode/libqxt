@@ -35,7 +35,7 @@
 #include "qxtglobal.h"
 #include <QObject>
 #include <QHostAddress>
-#include <QHttpHeader>
+#include "qhttpheader.h"
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 QT_FORWARD_DECLARE_CLASS(QTcpServer)
