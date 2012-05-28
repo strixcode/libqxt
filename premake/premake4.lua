@@ -1,6 +1,5 @@
 require "qxt-support"
 
-
 solution "LibQxt"
     newoption {
         trigger = "with-bonjour",
@@ -293,3 +292,42 @@ solution "LibQxt"
             defines { "NDEBUG" }
             flags { "Optimize" }
             flags { "Optimize" }
+
+
+
+
+
+
+    function registerQxtModule(qxtpath)
+            local gitQ = io.popen("git describe", "r");
+            local version = assert(gitQ:read('*a')):gsub("\n",""):gsub("v","");
+            gitQ:close();
+
+
+            local qmakeQV = io.popen((_OPTIONS["qt-qmake"] or "qmake") .. " -query QMAKE_MKSPECS", 'r' );
+            local mkspecs =  assert(qmakeQV:read('*a')):gsub("\n","");
+            qmakeQV:close();
+
+            local fd,e  = io.open(mkspecs .. "/modules/qxtvars.prf", "w");
+            if (fd == nil) then error(e) end;
+            fd:write("QXT_INSTALL_PREFIX = " .. qxtpath .. "\n");
+            fd:write("QXT_INSTALL_LIBS = " .. qxtpath .. "/bin\n" );
+            fd:write("QXT_INSTALL_BINS = " .. qxtpath .. "/bin\n" );
+            fd:write("QXT_INSTALL_HEADERS = " .. qxtpath .. "/include\n" );
+            fd:write("QXT_VERSION = " .. version .. "\n" );
+            fd:close();
+
+            os.copyfile(qxtpath .. "/features/qt_qxt.pri", mkspecs .. "/modules/");
+
+    end
+
+
+
+    newaction {
+        trigger     = "inject",
+        description = "Configure qmake to recognize this local build of libqxt",
+        execute = function ()
+            registerQxtModule(projectbase);
+        end
+    }
+
