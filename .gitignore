@@ -1,4 +1,3 @@
-syntax: glob
 *.pro.user
 *.app
 *.moc
@@ -38,9 +37,9 @@ lib/
 tools/3rdparty/qdoc3/qdoc3
 .qmake.cache
 qxtvars.prf
-glob:*.vcproj
-glob:*.exe
-glob:*.vcproj.*.user
+*.vcproj
+*.exe
+*.vcproj.*.user
 *.bak
 doc/html
 doc/qch/qxt.qch
