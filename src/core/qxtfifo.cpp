@@ -234,9 +234,10 @@ bool QxtFifo::isSequential () const
 qint64 QxtFifo::bytesAvailable () const
 {
 #if QT_VERSION >=  0x50000
-    return qxt_d().available.load();
+    return qxt_d().available.load() + QIODevice::bytesAvailable();
 #else
-    return qxt_d().available;
+    return qxt_d().available + QIODevice::bytesAvailable();
+
 #endif
 }
 
