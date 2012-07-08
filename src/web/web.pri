@@ -32,5 +32,6 @@ HEADERS += qxtwebjsonrpcservice_p.h
 HEADERS += qxtwebservicedirectory.h
 HEADERS += qxtwebservicedirectory_p.h
 HEADERS += qxtwebslotservice.h
+HEADERS += qhttpheader.h
 #HEADERS += qxtwebtemplate.h
 #HEADERS += qxtwebtemplate_p.h
