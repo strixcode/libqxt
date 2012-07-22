@@ -1,7 +1,7 @@
 CLEAN_TARGET     = QxtDesignerPlugins
 DEFINES         += BUILD_QXT_DESIGNER
-QT               = core gui
-QXT              = core gui
+QT               = core gui widgets
+QXT              = core widgets
 CONVENIENCE     +=
 
 include(designer.pri)

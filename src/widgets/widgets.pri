@@ -132,25 +132,25 @@ SOURCES  += qxtmultirootproxymodel.cpp
     SOURCES  += qxtwindowsystem.cpp
 
     unix:!macx {
-        SOURCES += qxtapplication_x11.cpp
-        SOURCES += qxtglobalshortcut_x11.cpp
-        SOURCES += qxtscreen_x11.cpp
-        SOURCES += qxtwindowsystem_x11.cpp
+        SOURCES += x11/qxtapplication_x11.cpp
+        SOURCES += x11/qxtglobalshortcut_x11.cpp
+        SOURCES += x11/qxtscreen_x11.cpp
+        SOURCES += x11/qxtwindowsystem_x11.cpp
     }
     macx {
-        HEADERS += qxtwindowsystem_mac.h
-        SOURCES += qxtapplication_mac.cpp
-        SOURCES += qxtglobalshortcut_mac.cpp
-        SOURCES += qxtwindowsystem_mac.cpp
+        HEADERS += mac/qxtwindowsystem_mac.h
+        SOURCES += mac/qxtapplication_mac.cpp
+        SOURCES += mac/qxtglobalshortcut_mac.cpp
+        SOURCES += mac/qxtwindowsystem_mac.cpp
 
         SOURCES -= qxtscreen.cpp
         HEADERS -= qxtscreen.h
     }
     win32 {
-        SOURCES += qxtapplication_win.cpp
-        SOURCES += qxtglobalshortcut_win.cpp
-        SOURCES += qxtscreen_win.cpp
-        SOURCES += qxtwindowsystem_win.cpp
+        SOURCES += win/qxtapplication_win.cpp
+        SOURCES += win/xtglobalshortcut_win.cpp
+        SOURCES += win/qxtscreen_win.cpp
+        SOURCES += win/qxtwindowsystem_win.cpp
     }
 }
 
