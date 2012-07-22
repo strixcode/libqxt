@@ -32,17 +32,17 @@ contains(QXT, web) {
     QT  += network
 }
 
-contains(QXT, gui) {
-    contains(QXT_MODULES, gui):DEFINES += QXT_GUI_LIB
-    else:warning(Qxt was built without QxtGui)
+contains(QXT, widgets) {
+    contains(QXT_MODULES, widgets):DEFINES += QXT_WIDGETS_LIB QXT_GUI_LIB
+    else:warning(Qxt was built without QxtWidgets)
 
-    DEPENDPATH       += $${QXT_INSTALL_HEADERS}/QxtGui
-    INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtGui
-    macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtGui.framework/HEADERS/
+    DEPENDPATH       += $${QXT_INSTALL_HEADERS}/QxtWidgets
+    INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtWidgets
+    macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtWidgets.framework/HEADERS/
 
-    qtAddLibrary(QxtGui)
+    qtAddLibrary(QxtWidgets)
     QXT += core
-    QT  += gui
+    QT  += gui widgets
 }
 
 contains(QXT, zeroconf) {
