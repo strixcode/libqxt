@@ -42,6 +42,5 @@
 #include "qxtwebjsonrpcservice.h"
 #include "qxtwebservicedirectory.h"
 #include "qxtwebslotservice.h"
-#include "qxtwebtemplate.h"
 
 #endif // QXTWEB_H_INCLUDED
