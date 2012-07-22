@@ -27,9 +27,9 @@ contains( QXT_MODULES, core ){
     SUBDIRS += sub_core
 }
 
-contains( QXT_MODULES, gui ){
-    message( building gui module )
-    sub_gui.subdir = src/gui
+contains( QXT_MODULES, widgets ){
+    message( building widgets module )
+    sub_gui.subdir = src/widgets
     sub_gui.depends = sub_core
     SUBDIRS += sub_gui
     !symbian:contains( QXT_MODULES, designer ){
