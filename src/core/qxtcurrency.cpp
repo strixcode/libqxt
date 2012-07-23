@@ -270,8 +270,8 @@ QxtCurrency QxtCurrency::round(int n) const
     else if(n > 3)
 	return *this;
     // Determine decimal shift required
-#ifdef Q_CC_GNU
-    qlonglong modv = llrint(exp10(4-n));
+#if defined(Q_CC_GNU) & defined(__USE_GNU)
+    qlonglong modv = qRound64(exp10(4-n));
 #else
     qlonglong modv = qRound64(pow(10.0, 4-n));
 #endif

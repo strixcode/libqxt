@@ -626,7 +626,7 @@ inline QxtCurrency operator/(const QxtCurrency &lhs, const QxtCurrency &rhs)
     if(lhs.isNull() || rhs.isNull())
 	result.setNull();
     else
-	result.value = lhs.value / rhs.value * 10000LL;
+	result.value = (lhs.value * 10000LL) / rhs.value;
     return result;
 }
 inline QxtCurrency operator/(const QxtCurrency &lhs, int rhs)
@@ -660,7 +660,7 @@ inline QxtCurrency operator/(double lhs, const QxtCurrency &rhs)
 {
     QxtCurrency result;
     if(!rhs.isNull())
-	result.value = qRound64(lhs / rhs.value);
+	result.value = qRound64(lhs / double(rhs.value));
     else
 	result.setNull();
     return result;
@@ -670,7 +670,7 @@ inline QxtCurrency operator/(double lhs, const QxtCurrency &rhs)
 inline QxtCurrency& QxtCurrency::operator/=(const QxtCurrency &rhs)
 {
     if(!isNull() && !rhs.isNull())
-	value = value / rhs.value * 10000LL;
+	value = (value * 10000LL) / rhs.value;
     return *this;
 }
 inline QxtCurrency& QxtCurrency::operator/=(int rhs)
