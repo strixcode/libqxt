@@ -371,7 +371,7 @@ inline QxtCurrency::operator int() const
 	return 0;
 }
 
-#if defined(qdoc) || defined(Q_OS_WIN32)
+#if defined(qdoc) || defined(QXT_HAVE_OLE_CURRENCY)
 inline QxtCurrency::operator CY() const
 {
     CY result;

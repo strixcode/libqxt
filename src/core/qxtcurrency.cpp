@@ -213,12 +213,7 @@ void QxtCurrency::parseASCII(const char *s)
 QByteArray QxtCurrency::toString() const
 {
     const int ndigs = std::numeric_limits<QxtCurrency>::digits10 + 5;
-#ifdef Q_OS_WIN32
-    char* buf = (char*)_alloca(ndigs);
-#else
-    char* buf = (char*)alloca(ndigs);
-#endif
-    memset(buf, 0, ndigs);
+    char buf[ndigs] = {0};
     char* const end = buf + ndigs - 2;
     bool neg = value < 0;
     qlonglong v = ::llabs(value);
