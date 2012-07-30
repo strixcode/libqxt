@@ -148,7 +148,7 @@ SOURCES  += qxtmultirootproxymodel.cpp
     }
     win32 {
         SOURCES += win/qxtapplication_win.cpp
-        SOURCES += win/xtglobalshortcut_win.cpp
+        SOURCES += win/qxtglobalshortcut_win.cpp
         SOURCES += win/qxtscreen_win.cpp
         SOURCES += win/qxtwindowsystem_win.cpp
     }
