@@ -620,6 +620,7 @@ void QxtHttpSessionManager::processEvents()
         QxtMetaObject::connect(device, SIGNAL(bytesWritten(qint64)), state.onBytesWritten, Qt::QueuedConnection);
         QxtMetaObject::connect(source, SIGNAL(readyRead()), state.onReadyRead, Qt::QueuedConnection);
         QxtMetaObject::connect(source, SIGNAL(aboutToClose()), state.onAboutToClose, Qt::QueuedConnection);
+        QObject::connect(device, SIGNAL(destroyed()), source, SLOT(deleteLater()));
 
         if (state.keepAlive)
         {
