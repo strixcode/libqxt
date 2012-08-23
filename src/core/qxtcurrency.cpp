@@ -320,6 +320,30 @@ QxtCurrency QxtCurrency::clamped(const QxtCurrency &low,
     return *this;
 }
 
+/*  Ugly hack for crippled MSVC versions missing the expm1() POSIX function.
+ *
+ *  The alternative implementation was obtained from John Cook.
+ *
+ *  http://www.johndcook.com/cpp_expm1.html
+ *
+ *  NOTE: MSDN indicates the "expm1()" function is available in MSVC 2012
+ *  and later editions. It's not clear, however, if this includes the
+ *  "Express" editions so further testing is advised.
+ */
+#if defined(_MSC_VER)
+inline double qxt_expm1(double n)
+{
+    if(fabs(n) < 1e-5)
+	// Small value, use 2-term Taylor series approximation
+	return n + 0.5*n*n;
+    else
+	// Large value, use native exp() function and subtract 1.0
+	return exp(n) - 1.0;
+}
+#else
+inline double qxt_expm1(double n) { return expm1(n); }
+#endif
+
 /*! Calculates the proper payment amount for an amortized loan repayment
  *  schedule. Given a principal amount \a P (that being borrowed), a periodic
  *  interest rate \a r and \a n payments, the result is the minimum payment
@@ -343,7 +367,7 @@ QxtCurrency QxtCurrency::amortizedPayment(const QxtCurrency &P, double r, int n)
     if(n > 1){
 	if(r >= 0.000001){
 	    double nval = double(n)*log(1.0+r);
-	    pmt = QxtCurrency(r * double(P) * exp(nval) / expm1(nval));
+	    pmt = QxtCurrency(r * double(P) * exp(nval) / qxt_expm1(nval));
 	}
 	else
 	    pmt = P / n;
