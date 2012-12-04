@@ -39,6 +39,8 @@
 #include <QString>
 #include <QPair>
 
+class QxtBoundFunction;
+
 class QxtRPCServiceIntrospector;
 class QxtRPCServicePrivate : public QObject, public QxtPrivate<QxtRPCService>
 {
@@ -83,6 +85,9 @@ public:
 
     // Maps a slot's metamethod to an array of parameter type names.
     QHash<MetaMethodDef, QList<QByteArray> > slotParameters;
+
+    // Maps the connected client id with bound parameters of the slot
+    QHash<quint64, QxtBoundFunction*>  clientsDataArgument;
 
     // As described in the main class's documentation, QMetaObject::invokeMethod is limited to 10 parameters, so
     // QxtRPCService is limited to 8.

@@ -263,8 +263,11 @@ QxtRPCServicePrivate::QxtRPCServicePrivate()
 void QxtRPCServicePrivate::clientConnected(QIODevice* dev, quint64 id)
 {
     // QxtMetaObject::bind() is a nice piece of magic that allows parameters to a slot to be defined in the connection.
-    QxtMetaObject::connect(dev, SIGNAL(readyRead()),
-                           QxtMetaObject::bind(this, SLOT(clientData(quint64)), Q_ARG(quint64, id)));
+    QxtBoundFunction* clientDataArg = QxtMetaObject::bind(this, SLOT(clientData(quint64)), Q_ARG(quint64, id));
+    // save the arguments object for later release in clientDisconnected
+    clientsDataArgument.insert(id, clientDataArg);
+
+    QxtMetaObject::connect(dev, SIGNAL(readyRead()), clientDataArg);
 
     // Inform other objects that a new client has connected.
     emit qxt_p().clientConnected(id);
@@ -282,6 +285,10 @@ void QxtRPCServicePrivate::clientDisconnected(QIODevice* dev, quint64 id)
     // When a device is disconnected, disconnect all signals connected to the object...
     QObject::disconnect(dev, 0, this, 0);
     QObject::disconnect(dev, 0, &qxt_p(), 0);
+
+    // ... remove its arguments object ...
+    QxtBoundFunction* clientDataArg = clientsDataArgument.take(id);
+    delete clientDataArg;
 
     // ... remove its buffer object...
     buffers.remove(id);

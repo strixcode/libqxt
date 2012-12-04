@@ -87,6 +87,10 @@ class QXT_CORE_EXPORT QxtBoundFunction : public QObject
 {
     Q_OBJECT
 public:
+#ifndef QXT_DOXYGEN_RUN
+    virtual ~QxtBoundFunction() {};
+#endif
+
     /*!
      * Invokes the bound function and returns a value.
      *
