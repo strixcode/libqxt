@@ -15,7 +15,7 @@ contains(QXT, berkeley) {
     INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtBerkeley
     macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtBerkeley.framework/HEADERS/
 
-    qtAddLibrary(QxtBerkeley)
+    qtAddModule(QxtBerkeley)
     QXT += core
 }
 
@@ -27,7 +27,7 @@ contains(QXT, web) {
     INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtWeb
     macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtWeb.framework/HEADERS/
 
-    qtAddLibrary(QxtWeb)
+    qtAddModule(QxtWeb)
     QXT += core network
     QT  += network
 }
@@ -40,7 +40,7 @@ contains(QXT, widgets) {
     INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtWidgets
     macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtWidgets.framework/HEADERS/
 
-    qtAddLibrary(QxtWidgets)
+    qtAddModule(QxtWidgets)
     QXT += core
     QT  += gui widgets
 }
@@ -53,7 +53,7 @@ contains(QXT, zeroconf) {
     INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtZeroconf
     macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtZeroconf.framework/HEADERS/
 
-    qtAddLibrary(QxtZeroconf)
+    qtAddModule(QxtZeroconf)
     QXT += core network
     QT  += network
 }
@@ -66,7 +66,7 @@ contains(QXT, network) {
     INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtNetwork
     macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtNetwork.framework/HEADERS/
 
-    qtAddLibrary(QxtNetwork)
+    qtAddModule(QxtNetwork)
     QXT += core
     QT  += network
 }
@@ -79,7 +79,7 @@ contains(QXT, sql) {
     INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtSql
     macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtSql.framework/HEADERS/
 
-    qtAddLibrary(QxtSql)
+    qtAddModule(QxtSql)
     QXT += core
     QT  += sql
 }
@@ -92,5 +92,5 @@ contains(QXT, core) {
     INCLUDEPATH      += $${QXT_INSTALL_HEADERS}/QxtCore
     macx:INCLUDEPATH += $${QXT_INSTALL_LIBS}/QxtCore.framework/HEADERS/
 
-    qtAddLibrary(QxtCore)
+    qtAddModule(QxtCore)
 }

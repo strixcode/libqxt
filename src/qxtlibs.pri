@@ -9,7 +9,7 @@ defineTest(qxtAddLibrary) {
     INCLUDEPATH += $${QXT_SOURCE_TREE}/include/$$2
     DEPENDPATH += $${QXT_SOURCE_TREE}/src/$$1
     DEPENDPATH += $${QXT_SOURCE_TREE}/include/$$2
-    qtAddLibrary($$2)
+    qtAddModule($$2)
 }
 
 contains(QXT, berkeley) {

@@ -38,6 +38,12 @@
 #include <QSplitter>
 #include <QPainter>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#define qxtSetSectionResizeMode setSectionResizeMode
+#else
+#define qxtSetSectionResizeMode setResizeMode
+#endif
+
 QxtConfigTableWidget::QxtConfigTableWidget(QWidget* parent) : QTableWidget(parent)
 {
     int pm = style()->pixelMetric(QStyle::PM_LargeIconSize);
@@ -147,8 +153,8 @@ void QxtConfigWidgetPrivate::relayout()
         splitter->setOrientation(Qt::Vertical);
         table->setRowCount(1);
         table->setColumnCount(0);
-        table->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-        table->verticalHeader()->setResizeMode(QHeaderView::Stretch);
+        table->horizontalHeader()->qxtSetSectionResizeMode(QHeaderView::ResizeToContents);
+        table->verticalHeader()->qxtSetSectionResizeMode(QHeaderView::Stretch);
         table->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
         table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
@@ -157,8 +163,8 @@ void QxtConfigWidgetPrivate::relayout()
         splitter->setOrientation(Qt::Horizontal);
         table->setRowCount(0);
         table->setColumnCount(1);
-        table->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-        table->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+        table->horizontalHeader()->qxtSetSectionResizeMode(QHeaderView::Stretch);
+        table->verticalHeader()->qxtSetSectionResizeMode(QHeaderView::ResizeToContents);
         table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         table->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     }

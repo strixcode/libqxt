@@ -47,18 +47,18 @@ public:
         return false;
     }
 #endif // Q_WS_X11
-#if defined(Q_WS_WIN) || defined(QXT_DOXYGEN_RUN)
+#if defined(Q_OS_WIN) || defined(QXT_DOXYGEN_RUN)
     virtual bool winEventFilter(MSG*, long*)
     {
         return false;
     }
-#endif // Q_WS_WIN
-#if defined(Q_WS_MAC) || defined(QXT_DOXYGEN_RUN)
+#endif // Q_OS_WIN
+#if defined(Q_OS_MAC) || defined(QXT_DOXYGEN_RUN)
     virtual bool macEventFilter(EventHandlerCallRef, EventRef)
     {
         return false;
     }
-#endif // Q_WS_MAC
+#endif // Q_OS_MAC
 };
 
 #endif // QXTNATIVEEVENTFILTER_H

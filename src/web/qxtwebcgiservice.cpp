@@ -52,6 +52,14 @@ TODO: implement timeout
 QxtCgiRequestInfo::QxtCgiRequestInfo() : sessionID(0), requestID(0), eventSent(false), terminateSent(false) {}
 QxtCgiRequestInfo::QxtCgiRequestInfo(QxtWebRequestEvent* req) : sessionID(req->sessionID), requestID(req->requestID), eventSent(false), terminateSent(false) {}
 
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+event->url.query(QUrl::FullyEncoded);
+
+#define qxtEncodedQuery encodedQuery()
+#else
+#define qxtEncodedQuery query(QUrl::FullyEncoded)
+#endif
+
 /*!
  * Constructs a QxtWebCgiService object with the specified session \a manager and \a parent.
  * This service will invoke the specified \a binary to handle incoming requests.
@@ -215,7 +223,8 @@ void QxtWebCgiService::pageRequestedEvent(QxtWebRequestEvent* event)
         env["CONTENT_TYPE"] = event->contentType;
         env["CONTENT_LENGTH"] = QString::number(event->content->unreadBytes());
     }
-    env["QUERY_STRING"] = event->url.encodedQuery();
+
+    env["QUERY_STRING"] = event->url.qxtEncodedQuery;
 
     // Populate HTTP header environment variables
     QMultiHash<QString, QString>::const_iterator iter = event->headers.begin();
@@ -251,10 +260,15 @@ void QxtWebCgiService::pageRequestedEvent(QxtWebRequestEvent* event)
     process->setEnvironment(p_env);
 
     // Launch process
-    if (event->url.hasQuery() && event->url.encodedQuery().contains('='))
+    if (event->url.hasQuery() && event->url.qxtEncodedQuery.contains('='))
     {
         // CGI/1.1 spec says to pass the query on the command line if there's no embedded = sign
-        process->start(qxt_d().binary + ' ' + QUrl::fromPercentEncoding(event->url.encodedQuery()), QIODevice::ReadWrite);
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+        QByteArray EncodedQuery = event->url.qxtEncodedQuery;
+#else
+        QByteArray EncodedQuery = event->url.qxtEncodedQuery.toLatin1();
+#endif
+        process->start(qxt_d().binary + ' ' + QUrl::fromPercentEncoding(EncodedQuery), QIODevice::ReadWrite);
     }
     else
     {

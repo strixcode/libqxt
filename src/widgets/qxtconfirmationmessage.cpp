@@ -78,7 +78,7 @@ void QxtConfirmationMessagePrivate::init(const QString& message)
         confirm->setText(QxtConfirmationMessage::tr("Do not show again."));
 
     QGridLayout* grid = qobject_cast<QGridLayout*>(qxt_p().layout());
-    QDialogButtonBox* buttons = qFindChild<QDialogButtonBox*>(&qxt_p());
+    QDialogButtonBox* buttons = qxt_p().findChild<QDialogButtonBox*>();
     if (grid && buttons)
     {
         const int idx = grid->indexOf(buttons);
@@ -218,7 +218,7 @@ QMessageBox::StandardButton QxtConfirmationMessage::confirm(QWidget* parent,
         QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton)
 {
     QxtConfirmationMessage msgBox(QMessageBox::NoIcon, title, text, confirmation, QMessageBox::NoButton, parent);
-    QDialogButtonBox* buttonBox = qFindChild<QDialogButtonBox*>(&msgBox);
+    QDialogButtonBox* buttonBox = msgBox.findChild<QDialogButtonBox*>();
     Q_ASSERT(buttonBox != 0);
 
     uint mask = QMessageBox::FirstButton;
@@ -415,7 +415,7 @@ int QxtConfirmationMessage::exec()
  */
 void QxtConfirmationMessage::done(int result)
 {
-    QDialogButtonBox* buttons = qFindChild<QDialogButtonBox*>(this);
+    QDialogButtonBox* buttons = this->findChild<QDialogButtonBox*>();
     Q_ASSERT(buttons != 0);
 
     int role = buttons->buttonRole(clickedButton());

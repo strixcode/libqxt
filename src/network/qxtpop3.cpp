@@ -367,12 +367,12 @@ void QxtPop3Private::socketError(QAbstractSocket::SocketError err)
 {
     if (err == QAbstractSocket::SslHandshakeFailedError)
     {
-        emit qxt_p().encryptionFailed( socket->errorString().toAscii() );
+        emit qxt_p().encryptionFailed( socket->errorString().toLatin1() );
         if (current != 0) current->cancel();
     }
     else if (state == StartState)
     {
-        emit qxt_p().connectionFailed( socket->errorString().toAscii() );
+        emit qxt_p().connectionFailed( socket->errorString().toLatin1() );
     }
 }
 

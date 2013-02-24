@@ -38,6 +38,9 @@ class QxtDesignerPlugins : public QObject, public QDesignerCustomWidgetCollectio
 {
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetCollectionInterface)
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+    Q_PLUGIN_METADATA(IID "org.libqxt.QDesignerCustomWidgetCollectionInterface")
+#endif
 
 public:
     QList<QDesignerCustomWidgetInterface*> customWidgets() const;
