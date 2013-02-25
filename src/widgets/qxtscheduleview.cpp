@@ -467,7 +467,11 @@ void QxtScheduleView::updateGeometries()
 
     for (int iLoop = 0; iLoop < qxt_d().m_hHeader->count(); iLoop++)
         qxt_d().m_hHeader->resizeSection(iLoop, viewport()->width() / 5);
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	qxt_d().m_hHeader->setSectionResizeMode(QHeaderView::Fixed);
+#else
     qxt_d().m_hHeader->setResizeMode(QHeaderView::Fixed);
+#endif
 
 
     horizontalScrollBar()->setRange(0, (qxt_d().m_hHeader->count() * qxt_d().m_hHeader->defaultSectionSize() - viewport()->width()));

@@ -7,7 +7,15 @@ CONVENIENCE     +=
 include(designer.pri)
 include(../qxtbase.pri)
 
-CONFIG          += designer plugin
+isEqual(QT_MAJOR_VERSION, 5) {
+    QT = core gui widgets designer
+	CONFIG += plugin
+} else {
+	QT = core gui
+	CONFIG += designer plugin
+}
+
+
 target.path      = $$[QT_INSTALL_PLUGINS]/designer
 INSTALLS         = target
 

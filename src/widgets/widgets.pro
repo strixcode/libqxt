@@ -1,6 +1,11 @@
 CLEAN_TARGET     = QxtWidgets
 DEFINES         += BUILD_QXT_GUI
-QT               = core gui widgets
+QT               = core gui 
+
+isEqual(QT_MAJOR_VERSION, 5) {
+	QT += widgets
+}
+
 QXT              = core
 CONVENIENCE     += $$CLEAN_TARGET
 

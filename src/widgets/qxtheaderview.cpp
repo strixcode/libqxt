@@ -82,7 +82,11 @@ void QxtHeaderView::setProportionalSectionSizes(bool enabled)
     {
         qxt_d().proportional = enabled;
         if (enabled)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
             setResizeMode(QHeaderView::Fixed);
+#else
+            setSectionResizeMode(QHeaderView::Fixed);
+#endif
     }
 }
 

@@ -94,7 +94,7 @@ public:
                 if (l == QLocale::LastLanguage)
                     continue;
                 // obsolete - NorwegianNynorsk is used instead
-                if (l == QLocale::Nynorsk)
+                if (l == QLocale::NorwegianNynorsk)
                     continue;
                 if (l == QLocale::C)
                     continue;

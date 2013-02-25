@@ -38,13 +38,19 @@
 #include <QtDebug>
 #include <qxtglobal.h>
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define qxtcreate create
+#else
+#define qxtcreate construct
+#endif
+
 template <typename T>
 class /*QXT_CORE_EXPORT*/ QxtMetaType
 {
 public:
     static inline T* construct(const T* copy = 0)
     {
-        return QMetaType::construct(qMetaTypeId<T>(), reinterpret_cast<const void*>(copy));
+        return QMetaType::qxtcreate(qMetaTypeId<T>(), reinterpret_cast<const void*>(copy));
     }
 
     static inline void destroy(T* data)
@@ -117,7 +123,7 @@ public:
 
 inline void* qxtConstructByName(const char* typeName, const void* copy = 0)
 {
-    return QMetaType::construct(QMetaType::type(typeName), copy);
+    return QMetaType::qxtcreate(QMetaType::type(typeName), copy);
 }
 
 inline void qxtDestroyByName(const char* typeName, void* data)

@@ -46,24 +46,27 @@ class QXT_GUI_EXPORT QxtApplication : public QApplication
 
 public:
     QxtApplication(int& argc, char** argv);
+    // native event filter support is not required for Qt5 because Qt5
+    // QCoreApplication already supports installation of native event filters
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
     QxtApplication(int& argc, char** argv, bool GUIenabled);
     QxtApplication(int& argc, char** argv, Type type);
+    void installNativeEventFilter(QxtNativeEventFilter* filter);
+    void removeNativeEventFilter(QxtNativeEventFilter* filter);
+#if defined(Q_WS_X11)
+    virtual bool x11EventFilter(XEvent* event);
+#elif defined(Q_OS_WIN)
+    virtual bool winEventFilter(MSG* msg, long* result);
+#elif defined(Q_OS_MAC)
+    virtual bool macEventFilter(EventHandlerCallRef caller, EventRef event);
+#endif // Q_WS_*
+#endif
 #if defined(Q_WS_X11)
     explicit QxtApplication(Display* display, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
     QxtApplication(Display* display, int& argc, char** argv, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
 #endif // Q_WS_X11
     virtual ~QxtApplication();
 
-    void installNativeEventFilter(QxtNativeEventFilter* filter);
-    void removeNativeEventFilter(QxtNativeEventFilter* filter);
-
-#if defined(Q_WS_X11)
-    virtual bool x11EventFilter(XEvent* event);
-#elif defined(Q_WS_WIN)
-    virtual bool winEventFilter(MSG* msg, long* result);
-#elif defined(Q_WS_MAC)
-    virtual bool macEventFilter(EventHandlerCallRef caller, EventRef event);
-#endif // Q_WS_*
 
     inline static QxtApplication* instance()
     {

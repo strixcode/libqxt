@@ -69,6 +69,10 @@ curl -d '{"method":"add", "id":1, "params": [9,2] }' localhost:1339
 #include <QtCore/QGenericReturnArgument>
 #include <QtCore/QGenericArgument>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#include <QUrlQuery>
+#endif
+
 
 QxtWebJsonRPCService::Private::Private(QxtWebJsonRPCService *that)
     : QObject()
@@ -471,11 +475,22 @@ void QxtWebJsonRPCService::pageRequestedEvent(QxtWebRequestEvent* event)
 {
     if (event->method == "GET") {
         QVariantMap params;
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
         QList<QPair<QByteArray, QByteArray> > enc = event->url.encodedQueryItems ();
+#else
+        QUrlQuery Query(event->url);
+        QList<QPair<QString, QString> > enc = Query.queryItems(QUrl::FullyEncoded);
+
+#endif
         for (int i = 0; i < enc.count(); i++) {
             params.insert(
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
                     QUrl::fromPercentEncoding (enc.at(i).first),
                     QUrl::fromPercentEncoding (enc.at(i).second));
+#else
+                    QUrl::fromPercentEncoding (enc.at(i).first.toLatin1()),
+                    QUrl::fromPercentEncoding (enc.at(i).second.toLatin1()));
+#endif
         }
         QString method = event->url.path().split('/').last();
         d->handle(event, QVariant(), method, params);

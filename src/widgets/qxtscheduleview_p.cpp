@@ -167,7 +167,11 @@ void QxtScheduleViewPrivate::init()
 
         /*here we also initialize the items*/
         m_vHeader->setDefaultSectionSize(20);
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+        m_vHeader->setSectionResizeMode(QHeaderView::Fixed);
+#else
         m_vHeader->setResizeMode(QHeaderView::Fixed);
+#endif
         reloadItemsFromModel();
     }
     qxt_p().updateGeometries();

@@ -30,8 +30,9 @@
 *****************************************************************************/
 
 #include "qxtapplication_p.h"
-#include "qxtnativeeventfilter.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#include "qxtnativeeventfilter.h"
 /*!
     \reimp
  */
@@ -44,3 +45,4 @@ bool QxtApplication::winEventFilter(MSG* msg, long* result)
     }
     return QApplication::winEventFilter(msg, result);
 }
+#endif

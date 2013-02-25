@@ -58,8 +58,9 @@ void QxtScheduleViewHeaderModel::newZoomDepth(const int zoomDepth)
         m_rowCountBuffer = m_dataSource->rows();
         endInsertRows();
         */
+		beginResetModel();
         m_rowCountBuffer = m_dataSource->rows();
-        reset();
+        endResetModel();
 
     }
 }

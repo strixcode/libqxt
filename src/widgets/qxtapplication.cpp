@@ -71,6 +71,7 @@ QxtApplication::QxtApplication(int& argc, char** argv)
 {
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 /*!
     Constructs a new QxtApplication with \a argc, \a argv and \a GUIenabled.
 
@@ -88,15 +89,6 @@ QxtApplication::QxtApplication(int& argc, char** argv, bool GUIenabled)
  */
 QxtApplication::QxtApplication(int& argc, char** argv, Type type)
         : QApplication(argc, argv, type)
-{
-}
-
-/*!
-    Destructs the QxtApplication.
-
-    \sa QApplication::~QApplication()
- */
-QxtApplication::~QxtApplication()
 {
 }
 
@@ -133,3 +125,15 @@ void QxtApplication::removeNativeEventFilter(QxtNativeEventFilter* filter)
 {
     qxt_d().nativeFilters.removeAll(filter);
 }
+#endif // #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+
+/*!
+    Destructs the QxtApplication.
+
+    \sa QApplication::~QApplication()
+ */
+QxtApplication::~QxtApplication()
+{
+}
+
+

@@ -153,7 +153,7 @@ QxtCurrency QxtCurrency::fromVariant(const QVariant &v)
  */
 QxtCurrency::QxtCurrency(const QString &s)
 {
-    parseASCII(s.toAscii().data());
+    parseASCII(s.toLatin1().data());
 }
 
 /*! Converts a string \a s into a QxtCurrency value. The decimal point used is

@@ -560,7 +560,13 @@ void QxtLogger::log(LogLevel level, const QList<QVariant>& args)
     \sa QxtLogger::installAsMessageHandler
     \sa QxtLogger::removeAsMessageHandler
 *******************************************************************************/
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+void QxtLoggerMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+#define qxtInstallMessageHandler qInstallMessageHandler
+#else
 void QxtLoggerMessageHandler(QtMsgType type, const char *msg)
+#define qxtInstallMessageHandler qInstallMsgHandler
+#endif
 {
     switch (type)
     {
@@ -592,7 +598,7 @@ void QxtLoggerMessageHandler(QtMsgType type, const char *msg)
 void QxtLogger::installAsMessageHandler()
 {
     QMutexLocker lock(qxt_d().mut_lock);
-    qInstallMsgHandler(QxtLoggerMessageHandler);
+    qxtInstallMessageHandler(QxtLoggerMessageHandler);
 }
 
 /*! \brief Tells Qt to use it's own message handling again.
@@ -600,7 +606,7 @@ void QxtLogger::installAsMessageHandler()
 void QxtLogger::removeAsMessageHandler()
 {
     QMutexLocker lock(qxt_d().mut_lock);
-    qInstallMsgHandler(0);
+    qxtInstallMessageHandler(0);
 }
 
 /*****************************************************************************

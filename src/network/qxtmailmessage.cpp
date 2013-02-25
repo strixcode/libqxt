@@ -245,12 +245,12 @@ void QxtMailMessage::removeAttachment(const QString& filename)
 QByteArray qxt_fold_mime_header(const QString& key, const QString& value, QTextCodec* latin1, const QByteArray& prefix)
 {
     QByteArray rv = "";
-    QByteArray line = key.toAscii() + ": ";
+    QByteArray line = key.toLatin1() + ": ";
     if (!prefix.isEmpty()) line += prefix;
     if (!value.contains("=?") && latin1->canEncode(value))
     {
         bool firstWord = true;
-        foreach(const QByteArray& word, value.toAscii().split(' '))
+        foreach(const QByteArray& word, value.toLatin1().split(' '))
         {
             if (line.size() > 78)
             {
@@ -377,7 +377,7 @@ QByteArray QxtMailMessage::rfc2822() const
     if (attach.count())
     {
         if (qxt_d->boundary.isEmpty())
-            qxt_d->boundary = QUuid::createUuid().toString().toAscii().replace("{", "").replace("}", "");
+            qxt_d->boundary = QUuid::createUuid().toString().toLatin1().replace("{", "").replace("}", "");
         if (!hasExtraHeader("MIME-Version"))
             rv += "MIME-Version: 1.0\r\n";
         if (!hasExtraHeader("Content-Type"))
@@ -404,7 +404,7 @@ QByteArray QxtMailMessage::rfc2822() const
             // Since we're in multipart mode, we'll be outputting this later
             continue;
         }
-        rv += qxt_fold_mime_header(r.toAscii(), extraHeader(r), latin1);
+        rv += qxt_fold_mime_header(r.toLatin1(), extraHeader(r), latin1);
     }
 
     rv += "\r\n";
@@ -668,16 +668,16 @@ void QxtRfc2822Parser::parseBody(QxtMailMessagePrivate* msg)
     QRegExp boundaryRe("boundary=\"?([^\"]*)\"?(?=;|$)");
     if (boundaryRe.indexIn(contentType) == -1)
     {
-        qDebug("Boundary regexp didn't match for %s", contentType.toAscii().data());
+        qDebug("Boundary regexp didn't match for %s", contentType.toLatin1().data());
         return;
     }
     QString boundary = boundaryRe.cap(1);
-//    qDebug("Boundary=%s", boundary.toAscii().data());
+//    qDebug("Boundary=%s", boundary.toLatin1().data());
     QRegExp bndRe(QString("(^|\\r?\\n)--%1(--)?[ \\t]*\\r?\\n").arg(QRegExp::escape(boundary)));   // find boundary delimiters in the body
-//    qDebug("search for %s", bndRe.pattern().toAscii().data());
+//    qDebug("search for %s", bndRe.pattern().toLatin1().data());
     if (!bndRe.isValid())
     {
-        qDebug("regexp %s not valid ! %s", bndRe.pattern().toAscii().data(), bndRe.errorString().toAscii().data());
+        qDebug("regexp %s not valid ! %s", bndRe.pattern().toLatin1().data(), bndRe.errorString().toLatin1().data());
     }
     bool last = false;
     // keep track of the position of two consecutive boundary delimiters:
@@ -701,7 +701,7 @@ void QxtRfc2822Parser::parseBody(QxtMailMessagePrivate* msg)
 //        qDebug("%d captures", bndRe.numCaptures());
 //        foreach(QString capture, bndRe.capturedTexts())
 //        {
-//            qDebug("->%s<-", capture.toAscii().data());
+//            qDebug("->%s<-", capture.toLatin1().data());
 //        }
 //        qDebug("beginFirst = %d\nendFirst = %d\nbeginSecond = %d\nendSecond = %d", beginFirst, endFirst, beginSecond, endSecond);
         if (endFirst != 0)
@@ -714,9 +714,9 @@ void QxtRfc2822Parser::parseBody(QxtMailMessagePrivate* msg)
 //            qDebug("Part headers:");
 //            foreach (QString key, partHeaders.keys())
 //            {
-//                qDebug("%s: %s", key.toAscii().data(), partHeaders[key].toAscii().data());
+//                qDebug("%s: %s", key.toLatin1().data(), partHeaders[key].toLatin1().data());
 //            }
-//            qDebug("Part body:\n%s", partBody.toAscii().data());
+//            qDebug("Part body:\n%s", partBody.toLatin1().data());
             if (partHeaders.contains("content-disposition") && partHeaders["content-disposition"].indexOf("attachment;") == 0)
             {
 //                qDebug("Attachment!");
@@ -763,7 +763,7 @@ QString QxtRfc2822Parser::decode(const QString& charset, const QString& encoding
     QByteArray buf;
     if (encoding == "q")
     {
-        QByteArray src = encoded.toAscii();
+        QByteArray src = encoded.toLatin1();
         int len = src.length();
         for (int i = 0; i < len; i++)
         {
@@ -787,9 +787,9 @@ QString QxtRfc2822Parser::decode(const QString& charset, const QString& encoding
     }
     else if (encoding == "b")
     {
-        buf = QByteArray::fromBase64(encoded.toAscii());
+        buf = QByteArray::fromBase64(encoded.toLatin1());
     }
-    QTextCodec *codec = QTextCodec::codecForName(charset.toAscii());
+    QTextCodec *codec = QTextCodec::codecForName(charset.toLatin1());
     if (codec)
     {
         rv = codec->toUnicode(buf);
@@ -826,15 +826,15 @@ QxtMailAttachment* QxtRfc2822Parser::parseAttachment(const QHash<QString,QString
     if (headers.contains("content-transfer-encoding"))
     {
         cte = headers["content-transfer-encoding"].toLower();
-//        qDebug("Content-Transfer-Encoding: %s", cte.toAscii().data());
+//        qDebug("Content-Transfer-Encoding: %s", cte.toLatin1().data());
     }
     if ( cte == "base64")
     {
-        content = QByteArray::fromBase64(body.toAscii());
+        content = QByteArray::fromBase64(body.toLatin1());
     }
     else if (cte == "quoted-printable")
     {
-        QByteArray src = body.toAscii();
+        QByteArray src = body.toLatin1();
         int len = src.length();
         QTextStream dest(&content);
         for (int i = 0; i < len; i++)
@@ -889,7 +889,7 @@ bool isTextMedia(const QString& contentType)
     QRegExp mtRe("^([^;/]*)/([^;/]*)(?=;|$)");
     if (mtRe.indexIn(contentType) == -1)
     {
-        qWarning("failed to parse %s for type/subtype", contentType.toAscii().data());
+        qWarning("failed to parse %s for type/subtype", contentType.toLatin1().data());
         return false;
     }
     QString type = mtRe.cap(1).toLower();

@@ -36,7 +36,9 @@
 bool QxtGlobalShortcutPrivate::error = false;
 #ifndef Q_WS_MAC
 int QxtGlobalShortcutPrivate::ref = 0;
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 QAbstractEventDispatcher::EventFilter QxtGlobalShortcutPrivate::prevEventFilter = 0;
+#endif
 #endif // Q_WS_MAC
 QHash<QPair<quint32, quint32>, QxtGlobalShortcut*> QxtGlobalShortcutPrivate::shortcuts;
 
@@ -44,7 +46,11 @@ QxtGlobalShortcutPrivate::QxtGlobalShortcutPrivate() : enabled(true), key(Qt::Ke
 {
 #ifndef Q_WS_MAC
     if (!ref++)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
         prevEventFilter = QAbstractEventDispatcher::instance()->setEventFilter(eventFilter);
+#else
+   QAbstractEventDispatcher::instance()->installNativeEventFilter(this);
+#endif
 #endif // Q_WS_MAC
 }
 
@@ -52,7 +58,11 @@ QxtGlobalShortcutPrivate::~QxtGlobalShortcutPrivate()
 {
 #ifndef Q_WS_MAC
     if (!--ref)
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
         QAbstractEventDispatcher::instance()->setEventFilter(prevEventFilter);
+#else
+        QAbstractEventDispatcher::instance()->removeNativeEventFilter(this);
+#endif
 #endif // Q_WS_MAC
 }
 
