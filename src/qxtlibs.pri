@@ -4,13 +4,25 @@ QMAKE_RPATHDIR += $${QXT_BUILD_TREE}/lib
 macx:LIBS += -F$${QXT_BUILD_TREE}/lib
 LIBS += -L$${QXT_BUILD_TREE}/lib
 
-defineTest(qxtAddLibrary) {
-    INCLUDEPATH += $${QXT_SOURCE_TREE}/src/$$1
-    INCLUDEPATH += $${QXT_SOURCE_TREE}/include/$$2
-    DEPENDPATH += $${QXT_SOURCE_TREE}/src/$$1
-    DEPENDPATH += $${QXT_SOURCE_TREE}/include/$$2
-    qtAddModule($$2)
+isEqual(QT_MAJOR_VERSION, 5) {
+	defineTest(qxtAddLibrary) {
+		INCLUDEPATH += $${QXT_SOURCE_TREE}/src/$$1
+		INCLUDEPATH += $${QXT_SOURCE_TREE}/include/$$2
+		DEPENDPATH += $${QXT_SOURCE_TREE}/src/$$1
+		DEPENDPATH += $${QXT_SOURCE_TREE}/include/$$2
+		qtAddModule($$2)
+	}
 }
+else {
+	defineTest(qxtAddLibrary) {
+		INCLUDEPATH += $${QXT_SOURCE_TREE}/src/$$1
+		INCLUDEPATH += $${QXT_SOURCE_TREE}/include/$$2
+		DEPENDPATH += $${QXT_SOURCE_TREE}/src/$$1
+		DEPENDPATH += $${QXT_SOURCE_TREE}/include/$$2
+		qtAddLibrary($$2)
+	}
+}
+
 
 contains(QXT, berkeley) {
     qxtAddLibrary(berkeley, QxtBerkeley)
@@ -23,11 +35,21 @@ contains(QXT, web) {
     QT  += network
 }
 
-contains(QXT, widgets) {
-    qxtAddLibrary(widgets, QxtWidgets)
-    QXT += core
-    QT  += gui widgets
+isEqual(QT_MAJOR_VERSION, 5) {
+	contains(QXT, widgets) {
+		qxtAddLibrary(widgets, QxtWidgets)
+		QXT += core
+		QT  += gui widgets
+	}
 }
+else {
+	contains(QXT, widgets) {
+		qxtAddLibrary(widgets, QxtWidgets)
+		QXT += core
+		QT  += gui
+	}
+}
+
 
 contains(QXT, network) {
     qxtAddLibrary(network, QxtNetwork)

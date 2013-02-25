@@ -53,8 +53,6 @@ QxtCgiRequestInfo::QxtCgiRequestInfo() : sessionID(0), requestID(0), eventSent(f
 QxtCgiRequestInfo::QxtCgiRequestInfo(QxtWebRequestEvent* req) : sessionID(req->sessionID), requestID(req->requestID), eventSent(false), terminateSent(false) {}
 
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-event->url.query(QUrl::FullyEncoded);
-
 #define qxtEncodedQuery encodedQuery()
 #else
 #define qxtEncodedQuery query(QUrl::FullyEncoded)
