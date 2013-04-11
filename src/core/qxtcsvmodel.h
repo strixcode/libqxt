@@ -76,8 +76,8 @@ public:
     void setSource(QIODevice *file, bool withHeader = false, QChar separator = ',', QTextCodec* codec = 0);
     void setSource(const QString filename, bool withHeader = false, QChar separator = ',', QTextCodec* codec = 0);
 
-    void toCSV(QIODevice *file, bool withHeader = false, QChar separator = ',', QTextCodec* codec = 0);
-    void toCSV(const QString filename, bool withHeader = false, QChar separator = ',', QTextCodec* codec = 0);
+    void toCSV(QIODevice *file, bool withHeader = false, QChar separator = ',', QTextCodec* codec = 0) const;
+    void toCSV(const QString filename, bool withHeader = false, QChar separator = ',', QTextCodec* codec = 0) const;
 
     enum QuoteOption { NoQuotes = 0, SingleQuote = 1, DoubleQuote = 2, BothQuotes = 3,
                        NoEscape = 0, TwoQuoteEscape = 4, BackslashEscape = 8, 
