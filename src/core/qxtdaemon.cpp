@@ -91,8 +91,18 @@ void QxtDaemon::signalHandler(int sig)
 }
 #endif
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define qxtInstallMessageHandler qInstallMessageHandler
+void QxtDaemon::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    const char* msgstr = msg.toLatin1();
+#else
+#define qxtInstallMessageHandler qInstallMsgHandler
 void QxtDaemon::messageHandler(QtMsgType type, const char *msg)
 {
+    const char* msgstr = msg;
+#endif
+
     QFile * f = qxt_daemon_singleton->logfile;
     f->write("[");
     f->write(QDateTime::currentDateTime().toString(Qt::ISODate).toLocal8Bit());
@@ -106,14 +116,14 @@ void QxtDaemon::messageHandler(QtMsgType type, const char *msg)
     else if (type == QtFatalMsg)
     {
         f->write("[qFatal] ");
-        f->write(msg);
+        f->write(msgstr);
         f->write("\n");
         f->write("aborting \n");
         f->flush();
         abort();
     }
 
-    f->write(msg);
+    f->write(msgstr);
     f->write("\n");
     f->flush();
 }
@@ -217,7 +227,7 @@ bool QxtDaemon::daemonize(bool pidfile)
 
 
     assert(logfile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append));
-    qInstallMsgHandler(QxtDaemon::messageHandler);
+    qxtInstallMessageHandler(QxtDaemon::messageHandler);
 
     return true;
 #else
