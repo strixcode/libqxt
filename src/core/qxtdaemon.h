@@ -50,7 +50,12 @@ public:
 
 #ifndef QXT_DOXYGEN_RUN
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+#else
     static void messageHandler(QtMsgType type, const char *msg);
+#endif
+
 #ifdef Q_OS_UNIX
     static void signalHandler(int signal);
 #endif
