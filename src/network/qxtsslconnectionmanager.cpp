@@ -103,7 +103,11 @@ bool QxtSslConnectionManager::autoEncrypt() const
     return qxt_d().autoEncrypt();
 }
 
+#if QT_VERSION >= 0x050000
+QIODevice* QxtSslConnectionManager::incomingConnection(qintptr socketDescriptor)
+#else
 QIODevice* QxtSslConnectionManager::incomingConnection(int socketDescriptor)
+#endif
 {
     QSslSocket* socket = new QSslSocket(this);
     if(socket->setSocketDescriptor(socketDescriptor)) {

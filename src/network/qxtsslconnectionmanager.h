@@ -55,7 +55,11 @@ public:
     bool autoEncrypt() const;
 
 protected:
+#if QT_VERSION >= 0x050000
+	virtual QIODevice* incomingConnection(qintptr socketDescriptor);
+#else
     virtual QIODevice* incomingConnection(int socketDescriptor);
+#endif
 };
 
 #endif

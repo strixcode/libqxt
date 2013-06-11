@@ -52,7 +52,11 @@ public:
     QXT_DECLARE_PUBLIC(QxtTcpConnectionManager)
 
 protected:
+#if QT_VERSION >= 0x050000
+	void incomingConnection(qintptr socketDescriptor);
+#else
     void incomingConnection(int socketDescriptor);
+#endif
 
 private Q_SLOTS:
     void socketDisconnected(QObject* client);

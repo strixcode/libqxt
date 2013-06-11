@@ -61,7 +61,11 @@ public:
     bool autoEncrypt() const;
 
 protected:
+#if QT_VERSION >= 0x050000
+	virtual void incomingConnection(qintptr socketDescriptor);
+#else
     virtual void incomingConnection(int socketDescriptor);
+#endif
 
 private:
     QXT_DECLARE_PRIVATE(QxtSslServer)
