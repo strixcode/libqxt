@@ -46,3 +46,5 @@ doc/qch/qxt.qch
 doc/qxt.tags
 *.mmp
 bld.inf
+*.Release
+*.Debug
