@@ -199,7 +199,7 @@ goto top
     echo -debug_and_release .. Build Qxt with and without debugging support
     echo -no-db .............. Do not link to Berkeley DB
     echo -nomake (module) .... Do not compile the specified module
-    echo                       options: berkeley designer gui network sql web zeroconf
+    echo                       options: %QXT_MODULES%
 
     del %QMAKE_CACHE%
     goto end
