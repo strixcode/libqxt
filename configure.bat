@@ -190,6 +190,9 @@ goto top
     echo                       default: search the system path
     echo -make-bin (path) .... Specifies the path to the make executable
     echo                       default: search the system path
+	echo -featuredir (dir) ... Specifies the path to the features directory
+	echo                       qt4 default: the result of qmake -query QMAKE_MKSPECS
+	echo                       qt5 default: the result of qmake -query QMAKE_SPEC
     echo -L (path)............ Specifies the a additional library search path
     echo -I (path)............ Specifies the a additional include search path
     echo -l (path)............ Add a custom library
