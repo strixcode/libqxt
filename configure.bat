@@ -273,8 +273,8 @@ if not "%QXT_INSTALL_BINS%" == "" goto skipdefaultbins
 if not "%QXT_INSTALL_FEATURES%" == "" goto skipdefaultfeatures
     %QMAKE_BIN% -query QMAKE_MKSPECS > %QXT_BUILD_TREE%\mkspecs.tmp
     set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
-	if "%QXT_INSTALL_FEATURES%" == "**Unknown**" %QMAKE_BIN% -query QMAKE_SPEC > %QXT_BUILD_TREE%\mkspecs.tmp & set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
-	if "%QXT_INSTALL_FEATURES%" == "**Unknown**" echo "Cannot find mkspecs directory. Cannot proceed." & goto end
+    if "%QXT_INSTALL_FEATURES%" == "**Unknown**" %QMAKE_BIN% -query QMAKE_SPEC > %QXT_BUILD_TREE%\mkspecs.tmp & set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
+    if "%QXT_INSTALL_FEATURES%" == "**Unknown**" echo "Cannot find mkspecs directory. Cannot proceed." & goto end
     set QXT_INSTALL_FEATURES=%QXT_INSTALL_FEATURES%\features
     del %QXT_BUILD_TREE%\mkspecs.tmp
 :skipdefaultfeatures
