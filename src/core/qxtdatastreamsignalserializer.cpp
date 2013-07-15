@@ -50,10 +50,10 @@ public:
     }
 };
 
-QxtDataStreamSignalSerializer::QxtDataStreamSignalSerializer(int dataStreamVersion)
+QxtDataStreamSignalSerializer::QxtDataStreamSignalSerializer()
 {
     QXT_INIT_PRIVATE(QxtDataStreamSignalSerializer);
-    qxt_d().dataStreamVersion = dataStreamVersion;
+    qxt_d().dataStreamVersion = DefaultDataStreamVersion;
 }
 
 QByteArray QxtDataStreamSignalSerializer::serialize(const QString& fn, const QVariant& p1, const QVariant& p2, const QVariant& p3,

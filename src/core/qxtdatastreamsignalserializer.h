@@ -43,11 +43,7 @@ class QXT_CORE_EXPORT QxtDataStreamSignalSerializer : public QxtAbstractSignalSe
 
 public:
 
-    enum  {
-        DefaultDataStreamVersion = 0
-    };
-
-    QxtDataStreamSignalSerializer(int dataStreamVersion = DefaultDataStreamVersion);
+    QxtDataStreamSignalSerializer();
 
     /*!
      * Serializes a signal into a form suitable for sending to an I/O device.
@@ -65,6 +61,10 @@ public:
      * Indicates whether the data currently in the buffer can be deserialized.
      */
     virtual bool canDeserialize(const QByteArray& buffer) const;
+
+    enum  {
+        DefaultDataStreamVersion = 0
+    };
 
     /*!
      * Get version of data stream to use for serialization/deserialization.
