@@ -413,7 +413,12 @@ void QxtRPCServicePrivate::dispatchFromClient(quint64 id, const QString& fn, con
         // See dispatchFromServer() for a discussion of the safety of QXT_ARG here.
         if(qxt_rpcservice_debug) 
             qDebug() << "QxtRPCService: received" << fn << "- invoking" << slot.recv << slot.slot.constData() << slot.type << id << p0 << p1 << p2 << p3 << p4 << p5 << p6 << p7;
-        if(!QMetaObject::invokeMethod(slot.recv, slot.slot.constData(), slot.type, Q_ARG(quint64, id), QXT_ARG(0),
+		
+		// Use AutoConnection to invoke the method if Unique Connection was specified (since Unique Connection does not make sense to invokeMethod)	
+		Qt::ConnectionType actualSlotType = slot.type;		
+		if (actualSlotType == Qt::UniqueConnection)
+			actualSlotType = Qt::AutoConnection;
+        if(!QMetaObject::invokeMethod(slot.recv, slot.slot.constData(), actualSlotType, Q_ARG(quint64, id), QXT_ARG(0),
                     QXT_ARG(1), QXT_ARG(2), QXT_ARG(3), QXT_ARG(4), QXT_ARG(5), QXT_ARG(6), QXT_ARG(7))) {
             qWarning() << "QxtRPCService: invokeMethod for " << slot.recv << "::" << slot.slot << " failed";
         }
@@ -723,8 +728,14 @@ bool QxtRPCService::attachSlot(const QString& rpcFunction, QObject* recv, const 
     QxtRPCServicePrivate::SlotDef slotDef;
     slotDef.recv = recv;
     slotDef.slot = name;
-    slotDef.type = type;
-    qxt_d().connectedSlots[rpcFunc].append(slotDef);
+	if (type == Qt::UniqueConnection)
+		slotDef.type = Qt::AutoConnection;
+	else
+		slotDef.type = type;
+	if (type != Qt::UniqueConnection || !qxt_d().connectedSlots[rpcFunc].contains(slotDef))
+	{
+		qxt_d().connectedSlots[rpcFunc].append(slotDef);
+	}
 
     return true;
 }

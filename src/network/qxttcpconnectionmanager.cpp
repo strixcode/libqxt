@@ -76,7 +76,11 @@ QxtTcpConnectionManagerPrivate::QxtTcpConnectionManagerPrivate()
     QObject::connect(&mapper, SIGNAL(mapped(QObject*)), this, SLOT(socketDisconnected(QObject*)));
 }
 
+#if QT_VERSION >= 0x050000
+void QxtTcpConnectionManagerPrivate::incomingConnection(qintptr socketDescriptor)
+#else
 void QxtTcpConnectionManagerPrivate::incomingConnection(int socketDescriptor)
+#endif
 {
     QIODevice* device = qxt_p().incomingConnection(socketDescriptor);
     if (device)
@@ -133,7 +137,11 @@ bool QxtTcpConnectionManager::isAcceptingConnections() const
  * The default implementation returns a new QTcpSocket with the specified descriptor.
  * Subclasses may return QTcpSocket subclasses, such as QSslSocket.
  */
+#if QT_VERSION >= 0x050000
+QIODevice* QxtTcpConnectionManager::incomingConnection(qintptr socketDescriptor)
+#else
 QIODevice* QxtTcpConnectionManager::incomingConnection(int socketDescriptor)
+#endif
 {
     QTcpSocket* device = new QTcpSocket(this);
     device->setSocketDescriptor(socketDescriptor);

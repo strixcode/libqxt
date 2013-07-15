@@ -197,7 +197,11 @@ bool QxtSslServer::autoEncrypt() const
 /*!
  * \reimp
  */
+#if QT_VERSION >= 0x050000
+void QxtSslServer::incomingConnection(qintptr socketDescriptor)
+#else
 void QxtSslServer::incomingConnection(int socketDescriptor)
+#endif
 {
     QSslSocket* socket = new QSslSocket(this);
     if(socket->setSocketDescriptor(socketDescriptor)) {

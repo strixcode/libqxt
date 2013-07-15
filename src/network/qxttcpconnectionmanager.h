@@ -52,7 +52,11 @@ public:
     QNetworkProxy proxy() const;
 
 protected:
+#if QT_VERSION >= 0x050000
+	virtual QIODevice* incomingConnection(qintptr socketDescriptor);
+#else
     virtual QIODevice* incomingConnection(int socketDescriptor);
+#endif
     virtual void removeConnection(QIODevice* device, quint64 clientID);
 
 protected: // for QxtSslConnectionManager
