@@ -190,6 +190,9 @@ goto top
     echo                       default: search the system path
     echo -make-bin (path) .... Specifies the path to the make executable
     echo                       default: search the system path
+	echo -featuredir (dir) ... Specifies the path to the features directory
+	echo                       qt4 default: the result of qmake -query QMAKE_MKSPECS
+	echo                       qt5 default: the result of qmake -query QMAKE_SPEC
     echo -L (path)............ Specifies the a additional library search path
     echo -I (path)............ Specifies the a additional include search path
     echo -l (path)............ Add a custom library
@@ -270,6 +273,8 @@ if not "%QXT_INSTALL_BINS%" == "" goto skipdefaultbins
 if not "%QXT_INSTALL_FEATURES%" == "" goto skipdefaultfeatures
     %QMAKE_BIN% -query QMAKE_MKSPECS > %QXT_BUILD_TREE%\mkspecs.tmp
     set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
+	if "%QXT_INSTALL_FEATURES%" == "**Unknown**" %QMAKE_BIN% -query QMAKE_SPEC > %QXT_BUILD_TREE%\mkspecs.tmp & set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
+	if "%QXT_INSTALL_FEATURES%" == "**Unknown**" echo "Cannot find mkspecs directory. Cannot proceed." & goto end
     set QXT_INSTALL_FEATURES=%QXT_INSTALL_FEATURES%\features
     del %QXT_BUILD_TREE%\mkspecs.tmp
 :skipdefaultfeatures
