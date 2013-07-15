@@ -21,7 +21,6 @@ set QXT_INSTALL_DOCS=
 @rem -- working directories
 set QXT_BUILD_TREE=%CD%
 cd "%0\..\"
-SET QXT_SOURCE_TREE=%CD%
 cd %QXT_BUILD_TREE%
 if not exist %QXT_BUILD_TREE%\features mkdir %QXT_BUILD_TREE%\features >NUL 2>&1
 if not exist %QXT_BUILD_TREE%\examples mkdir %QXT_BUILD_TREE%\examples >NUL 2>&1
@@ -190,9 +189,9 @@ goto top
     echo                       default: search the system path
     echo -make-bin (path) .... Specifies the path to the make executable
     echo                       default: search the system path
-	echo -featuredir (dir) ... Specifies the path to the features directory
-	echo                       qt4 default: the result of qmake -query QMAKE_MKSPECS
-	echo                       qt5 default: the result of qmake -query QMAKE_SPEC
+    echo -featuredir (dir) ... Specifies the path to the features directory
+    echo                       qt4 default: the result of qmake -query QMAKE_MKSPECS
+    echo                       qt5 default: the result of qmake -query QMAKE_SPEC
     echo -L (path)............ Specifies the a additional library search path
     echo -I (path)............ Specifies the a additional include search path
     echo -l (path)............ Add a custom library
@@ -273,8 +272,8 @@ if not "%QXT_INSTALL_BINS%" == "" goto skipdefaultbins
 if not "%QXT_INSTALL_FEATURES%" == "" goto skipdefaultfeatures
     %QMAKE_BIN% -query QMAKE_MKSPECS > %QXT_BUILD_TREE%\mkspecs.tmp
     set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
-	if "%QXT_INSTALL_FEATURES%" == "**Unknown**" %QMAKE_BIN% -query QMAKE_SPEC > %QXT_BUILD_TREE%\mkspecs.tmp & set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
-	if "%QXT_INSTALL_FEATURES%" == "**Unknown**" echo "Cannot find mkspecs directory. Cannot proceed." & goto end
+    if "%QXT_INSTALL_FEATURES%" == "**Unknown**" %QMAKE_BIN% -query QMAKE_SPEC > %QXT_BUILD_TREE%\mkspecs.tmp & set /p QXT_INSTALL_FEATURES=<%QXT_BUILD_TREE%\mkspecs.tmp
+    if "%QXT_INSTALL_FEATURES%" == "**Unknown**" echo "Cannot find mkspecs directory. Cannot proceed." & goto end
     set QXT_INSTALL_FEATURES=%QXT_INSTALL_FEATURES%\features
     del %QXT_BUILD_TREE%\mkspecs.tmp
 :skipdefaultfeatures
@@ -291,7 +290,6 @@ echo QXT_INSTALL_FEATURES = %QXT_INSTALL_FEATURES:\=/% >> %QMAKE_CACHE%
 echo QXT_INSTALL_FEATURES = %QXT_INSTALL_FEATURES:\=/% >> %QXT_VARS%
 echo QXT_INSTALL_DOCS = %QXT_INSTALL_DOCS:\=/% >> %QMAKE_CACHE%
 echo QXT_INSTALL_DOCS = %QXT_INSTALL_DOCS:\=/% >> %QXT_VARS%
-echo QXT_SOURCE_TREE = %QXT_SOURCE_TREE:\=/% >> %QMAKE_CACHE%
 echo QXT_BUILD_TREE = %QXT_BUILD_TREE:\=/% >> %QMAKE_CACHE%
 
 echo    Testing for optional external libraries.
@@ -303,7 +301,7 @@ echo    Testing for Berkeley DB...
 echo BDB... >> %CONFIG_LOG%
 if not exist %QXT_BUILD_TREE%\config.tests\db mkdir %QXT_BUILD_TREE%\config.tests\db
 cd %QXT_BUILD_TREE%\config.tests\db
-%QMAKE_BIN% %QXT_SOURCE_TREE%\config.tests\db\db.pro >> %CONFIG_LOG% 2>&1
+%QMAKE_BIN% %QXT_BUILD_TREE%\config.tests\db\db.pro >> %CONFIG_LOG% 2>&1
 if errorlevel 1 goto dbfailed
 call %MAKE_BIN% clean >> %CONFIG_LOG% 2>&1
 call %MAKE_BIN% >> %CONFIG_LOG% 2>&1
@@ -324,7 +322,7 @@ echo    Testing for Zero Conf...
 echo ZEROCONF... >> %CONFIG_LOG%
 if not exist %QXT_BUILD_TREE%\config.tests\zeroconf mkdir %QXT_BUILD_TREE%\config.tests\zeroconf
 cd %QXT_BUILD_TREE%\config.tests\zeroconf
-%QMAKE_BIN% %QXT_SOURCE_TREE%\config.tests\zeroconf\zeroconf.pro >> %CONFIG_LOG% 2>&1
+%QMAKE_BIN% %QXT_BUILD_TREE%\config.tests\zeroconf\zeroconf.pro >> %CONFIG_LOG% 2>&1
 if errorlevel 1 goto zeroconffailed
 call %MAKE_BIN% clean >> %CONFIG_LOG% 2>&1
 call %MAKE_BIN% >> %CONFIG_LOG% 2>&1
@@ -347,7 +345,7 @@ echo CONFIG += release >> %QMAKE_CACHE%
 echo    Configuration successful.
 echo    Generating makefiles...
 cd %QXT_BUILD_TREE%
-%QMAKE_BIN% %MSVCMODE% -recursive %QXT_SOURCE_TREE%\libqxt.pro
+%QMAKE_BIN% %MSVCMODE% -recursive %QXT_BUILD_TREE%\libqxt.pro
 if errorlevel 1 goto mainqmakeERR
 
 if not "%MSVCMODE%" == "" goto skipmakeannounce

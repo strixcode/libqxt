@@ -36,11 +36,32 @@
 #include <QtDebug>
 #include <qendian.h>
 
+class QxtDataStreamSignalSerializerPrivate : public QxtPrivate<QxtDataStreamSignalSerializer>
+{
+public:
+    QXT_DECLARE_PUBLIC(QxtDataStreamSignalSerializer)
+    int dataStreamVersion;
+
+    void applyVersion(QDataStream &str) const
+    {
+        if (dataStreamVersion != (int) QxtDataStreamSignalSerializer::DefaultDataStreamVersion) {
+            str.setVersion((QDataStream::Version) dataStreamVersion);
+        }
+    }
+};
+
+QxtDataStreamSignalSerializer::QxtDataStreamSignalSerializer()
+{
+    QXT_INIT_PRIVATE(QxtDataStreamSignalSerializer);
+    qxt_d().dataStreamVersion = DefaultDataStreamVersion;
+}
+
 QByteArray QxtDataStreamSignalSerializer::serialize(const QString& fn, const QVariant& p1, const QVariant& p2, const QVariant& p3,
         const QVariant& p4, const QVariant& p5, const QVariant& p6, const QVariant& p7, const QVariant& p8) const
 {
     QByteArray rv;
     QDataStream str(&rv, QIODevice::WriteOnly);
+    qxt_d().applyVersion(str);
     str << fn;
     unsigned char ct = 8;
     if (!p1.isValid()) ct = 0;
@@ -75,6 +96,7 @@ QxtAbstractSignalSerializer::DeserializedData QxtDataStreamSignalSerializer::des
     if (cmd.length() == 0) return NoOp();
 
     QDataStream str(cmd);
+    qxt_d().applyVersion(str);
 
     QString signal;
     unsigned char argCount;
@@ -98,4 +120,14 @@ bool QxtDataStreamSignalSerializer::canDeserialize(const QByteArray& buffer) con
     quint32 headerLen = qFromLittleEndian<quint32>(reinterpret_cast<const uchar*>(buffer.constData()));
     quint32 bodyLen = quint32(buffer.length() - 4);
     return headerLen <= bodyLen;
+}
+
+int QxtDataStreamSignalSerializer::dataStreamVersion() const
+{
+    return qxt_d().dataStreamVersion;
+}
+
+void QxtDataStreamSignalSerializer::setDataStreamVersion(int version)
+{
+    qxt_d().dataStreamVersion = version;
 }
