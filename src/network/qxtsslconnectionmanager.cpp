@@ -103,6 +103,25 @@ bool QxtSslConnectionManager::autoEncrypt() const
     return qxt_d().autoEncrypt();
 }
 
+/*!
+ * Sets the protocol used when \a autoEncrypt is enabled.
+ *
+ * \sa protocol
+ */
+void QxtSslConnectionManager::setProtocol(QSsl::SslProtocol proto)
+{
+    qxt_d().setProtocol(proto);
+}
+
+/*!
+ * Returns the protocol used when \a autoEncrypt is enabled.
+ * \sa setProtocol
+ */
+QSsl::SslProtocol QxtSslConnectionManager::protocol() const
+{
+    return qxt_d().protocol();
+}
+
 #if QT_VERSION >= 0x050000
 QIODevice* QxtSslConnectionManager::incomingConnection(qintptr socketDescriptor)
 #else

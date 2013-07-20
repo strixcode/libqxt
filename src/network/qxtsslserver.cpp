@@ -65,6 +65,7 @@ public:
     QSslCertificate localCertificate;
     QSslKey privateKey;
     bool autoEncrypt;
+    QSsl::SslProtocol proto;
     QQueue<QSslSocket*> pendingConnections;
 };
 
@@ -75,6 +76,7 @@ QxtSslServer::QxtSslServer(QObject* parent) : QTcpServer(parent)
 {
     QXT_INIT_PRIVATE(QxtSslServer);
     qxt_d().autoEncrypt = true;
+    qxt_d().proto = QSsl::TlsV1SslV3;
 }
 
 /*!
@@ -192,6 +194,25 @@ void QxtSslServer::setAutoEncrypt(bool on)
 bool QxtSslServer::autoEncrypt() const
 {
     return qxt_d().autoEncrypt;
+}
+
+/*!
+ * Sets the protocol used when \a autoEncrypt is enabled.
+ *
+ * \sa protocol
+ */
+void QxtSslServer::setProtocol(QSsl::SslProtocol proto)
+{
+    qxt_d().proto = proto;
+}
+
+/*!
+ * Returns the protocol used when \a autoEncrypt is enabled.
+ * \sa setProtocol
+ */
+QSsl::SslProtocol QxtSslServer::protocol() const
+{
+    return qxt_d().proto;
 }
 
 /*!
