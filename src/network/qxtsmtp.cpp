@@ -302,6 +302,13 @@ void QxtSmtpPrivate::socketRead()
                 sendNext();
             }
             break;
+        case Disconnected:
+        case EhloExtensionsReceived:
+        case EhloDone:
+        case Authenticated:
+        case Waiting:
+            // Do nothing.
+            break;
         }
     }
 }
