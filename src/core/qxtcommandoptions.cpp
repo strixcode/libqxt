@@ -548,7 +548,7 @@ void QxtCommandOptionsPrivate::parse(const QStringList& params)
     int ct = params.count();
     int skip = 0;
     bool endFlags = false;
-    bool notUnrecognized, hasEquals;
+    bool hasEquals;
     QString name, param, value;
 
     while (pos < ct)
@@ -574,7 +574,6 @@ void QxtCommandOptionsPrivate::parse(const QStringList& params)
                 positional.append(param);
                 continue;
             }
-            notUnrecognized = false;
 
             if (flagStyle != QxtCommandOptions::Slash && param == "--")
             {
