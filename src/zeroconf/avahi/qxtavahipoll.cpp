@@ -80,6 +80,7 @@ const AvahiPoll* qxtAvahiPoll(void)
 
 AvahiWatch* qxtAvahiWatchNew(const AvahiPoll *api, int fd, AvahiWatchEvent event, AvahiWatchCallback callback, void *userdata)
 {
+	Q_UNUSED(api);
 	return new AvahiWatch(fd, event, callback, userdata);
 }
 
@@ -103,6 +104,7 @@ void qxtAvahiWatchFree(AvahiWatch *w)
 
 AvahiTimeout* qxtAvahiTimeoutNew(const AvahiPoll *api, const struct timeval *tv, AvahiTimeoutCallback callback, void *userdata)
 {
+	Q_UNUSED(api);
 	return new AvahiTimeout(tv, callback, userdata);
 }
 
