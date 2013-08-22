@@ -158,19 +158,16 @@ static int isQtOption(const QString& param)
     if (param.left(5) == "-psn_") return 1;
 #endif
     QString name = param.mid(1), value;
-    bool hasEquals;
 
     // Separate the option and the value, if present
     if (name.indexOf('=') != -1)
     {
         value = param.section('=', 1);
         name = param.section('=', 0, 0);
-        hasEquals = true;
     }
     else
     {
         value = "";
-        hasEquals = false;
     }
 
     const char* option;
