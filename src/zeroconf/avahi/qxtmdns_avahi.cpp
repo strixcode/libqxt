@@ -42,7 +42,7 @@ QxtMDNS::QxtMDNS(int id, QObject* parent)
 		: QObject(parent)
 {
 	QXT_INIT_PRIVATE(QxtMDNS);
-	qxt_d().info = id;
+	qxt_d().info = QHostInfo(id);
 	qxt_d().client = NULL;
 	qxt_d().recordbrowser = NULL;
 	qxt_d().sent = false;
