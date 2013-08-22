@@ -96,6 +96,7 @@ void QxtDaemon::signalHandler(int sig)
 void QxtDaemon::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     const char* msgstr = msg.toLatin1();
+    Q_UNUSED(context);
 #else
 #define qxtInstallMessageHandler qInstallMsgHandler
 void QxtDaemon::messageHandler(QtMsgType type, const char *msg)
