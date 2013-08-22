@@ -562,12 +562,14 @@ void QxtLogger::log(LogLevel level, const QList<QVariant>& args)
 *******************************************************************************/
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 void QxtLoggerMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Q_UNUSED(context);
 #define qxtInstallMessageHandler qInstallMessageHandler
 #else
 void QxtLoggerMessageHandler(QtMsgType type, const char *msg)
+{
 #define qxtInstallMessageHandler qInstallMsgHandler
 #endif
-{
     switch (type)
     {
     case QtDebugMsg:
