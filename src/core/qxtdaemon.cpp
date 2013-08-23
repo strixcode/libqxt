@@ -59,7 +59,6 @@ int main(int argc, char ** argv)
 #include <QFile>
 #include <QCoreApplication>
 #include <QDateTime>
-#include <errno.h>
 
 #ifdef Q_OS_UNIX
 #include <signal.h>
