@@ -696,9 +696,9 @@ void QxtRfc2822Parser::parseBody(QxtMailMessagePrivate* msg)
         endSecond = bndRe.pos() + bndRe.matchedLength();
 #ifdef QXT_MAIL_MESSAGE_DEBUG
 #if QT_VERSION >= 0x040600
-    if (bndRe.captureCount() == 2 && bndRe.cap(2) == "--") last = true;
+        if (bndRe.captureCount() == 2 && bndRe.cap(2) == "--") last = true;
 #else
-    if (bndRe.numCaptures() == 2 && bndRe.cap(2) == "--") last = true;
+        if (bndRe.numCaptures() == 2 && bndRe.cap(2) == "--") last = true;
 #endif
 #endif
 
