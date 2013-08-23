@@ -46,6 +46,7 @@
 #include <QtDebug>
 #include <QRegExp>
 
+//#define QXT_MAIL_MESSAGE_DEBUG 1
 
 struct QxtMailMessagePrivate : public QSharedData
 {
@@ -679,6 +680,9 @@ void QxtRfc2822Parser::parseBody(QxtMailMessagePrivate* msg)
     {
         qDebug("regexp %s not valid ! %s", bndRe.pattern().toLatin1().data(), bndRe.errorString().toLatin1().data());
     }
+#ifdef QXT_MAIL_MESSAGE_DEBUG
+    bool last = false;
+#endif
     // keep track of the position of two consecutive boundary delimiters:
     // begin* is the position of the delimiter first character,
     // end* is the position of the first character of the part following it.
@@ -690,7 +694,15 @@ void QxtRfc2822Parser::parseBody(QxtMailMessagePrivate* msg)
     {
         beginSecond = bndRe.pos() + bndRe.cap(1).length(); // add length of preceding line break, if any
         endSecond = bndRe.pos() + bndRe.matchedLength();
+#ifdef QXT_MAIL_MESSAGE_DEBUG
+#if QT_VERSION >= 0x040600
+    if (bndRe.captureCount() == 2 && bndRe.cap(2) == "--") last = true;
+#else
+    if (bndRe.numCaptures() == 2 && bndRe.cap(2) == "--") last = true;
+#endif
+#endif
 
+//        qDebug("found%s boundary delimiter at position %d.", last?" last":"", beginSecond);
 //        qDebug("%d captures", bndRe.numCaptures());
 //        foreach(QString capture, bndRe.capturedTexts())
 //        {
