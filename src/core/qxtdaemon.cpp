@@ -60,6 +60,7 @@ int main(int argc, char ** argv)
 #include <QCoreApplication>
 #include <QDateTime>
 
+
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #include <fcntl.h>
