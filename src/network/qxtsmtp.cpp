@@ -302,6 +302,9 @@ void QxtSmtpPrivate::socketRead()
                 sendNext();
             }
             break;
+        default:
+            // Do nothing.
+            break;
         }
     }
 }
