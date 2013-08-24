@@ -170,6 +170,7 @@ void AvahiWatch::setEventType(AvahiWatchEvent event)
 
 void AvahiWatch::activated(int fd)
 {
+	Q_UNUSED(fd);
 	_lastEvent = _event;
 	_callback(this, _fd, _event, _userdata);
 	_lastEvent = (AvahiWatchEvent)0;
