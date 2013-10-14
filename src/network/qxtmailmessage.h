@@ -82,6 +82,9 @@ public:
     void addAttachment(const QString& filename, const QxtMailAttachment& attach);
     void removeAttachment(const QString& filename);
 
+    void setWordWrapLimit(int limit);
+    void setWordWrapPreserveStartSpaces(bool state);
+
     QByteArray rfc2822() const;
     static QxtMailMessage fromRfc2822(const QByteArray&);
 
