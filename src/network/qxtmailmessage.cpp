@@ -54,12 +54,15 @@ struct QxtMailMessagePrivate : public QSharedData
     QxtMailMessagePrivate(const QxtMailMessagePrivate& other)
             : QSharedData(other), rcptTo(other.rcptTo), rcptCc(other.rcptCc), rcptBcc(other.rcptBcc),
             subject(other.subject), body(other.body), sender(other.sender),
-            extraHeaders(other.extraHeaders), attachments(other.attachments) {}
+            extraHeaders(other.extraHeaders), attachments(other.attachments),
+            wordWrapLimit(78), preserveStartSpaces(false) {}
     QStringList rcptTo, rcptCc, rcptBcc;
     QString subject, body, sender;
     QHash<QString, QString> extraHeaders;
     QHash<QString, QxtMailAttachment> attachments;
     mutable QByteArray boundary;
+    int wordWrapLimit;
+    bool preserveStartSpaces;
 };
 
 class QxtRfc2822Parser
@@ -241,6 +244,25 @@ void QxtMailMessage::addAttachment(const QString& filename, const QxtMailAttachm
 void QxtMailMessage::removeAttachment(const QString& filename)
 {
     qxt_d->attachments.remove(filename);
+}
+
+/*!
+ * \brief Rewrites default 78 word wrap line length limit with new \a limit
+ */
+void QxtMailMessage::setWordWrapLimit(int limit)
+{
+    qxt_d->wordWrapLimit = limit;
+}
+
+/*!
+ * \brief Forces wrapped line to have the same indent as original.
+ *
+ * Ex: If your very long line starts with 4 sp. then wrapped part
+ *     will start with 4 sp too when this feature enabled
+ */
+void QxtMailMessage::setWordWrapPreserveStartSpaces(bool state)
+{
+    qxt_d->preserveStartSpaces = state;
 }
 
 QByteArray qxt_fold_mime_header(const QString& key, const QString& value, QTextCodec* latin1, const QByteArray& prefix)
@@ -443,71 +465,58 @@ QByteArray QxtMailMessage::rfc2822() const
     {
         QByteArray b = latin1->fromUnicode(body());
         int len = b.length();
-        QByteArray line = "";
-        QByteArray word = "";
-        for (int i = 0; i < len; i++)
+        QByteArray line;
+        QByteArray word;
+        QByteArray spaces;
+        QByteArray startSpaces;
+        for (int i = 0; i <= len; i++)
         {
-            if (b[i] == '\n' || b[i] == '\r')
-            {
-                if (line.isEmpty()) 
-                {
-                    line = word;
-                    word = "";
-                }
-                else if (line.length() + word.length() + 1 <= 78)
-                {
-                    line = line + ' ' + word;
-                    word = "";
-                }
-                if(line[0] == '.')
-                    rv += ".";
-                rv += line + "\r\n";
-                if ((b[i+1] == '\n' || b[i+1] == '\r') && b[i] != b[i+1])
-                {
-                    // If we're looking at a CRLF pair, skip the second half
-                    i++;
-                }
-                line = word;
+            char ignoredChar = 0;
+            if (i != len) {
+                ignoredChar = b[i] == '\n'? '\r' : b[i] == '\r'? '\n' : 0;
             }
-            else if (b[i] == ' ')
-            {
-                if (line.length() + word.length() + 1 > 78)
-                {
+            if (!(ignoredChar || (i == len) || (b[i] == ' ') || (b[i] == '\t'))) {
+                // the char is part of word
+                if (word.isEmpty()) { // start of new word / end of spaces
+                    if (line.isEmpty()) {
+                        startSpaces = spaces;
+                    }
+                }
+                word += b[i];
+                continue;
+            }
+
+            // space char, so end of word or continuous spaces
+            if (!word.isEmpty()) { // start of new space area / end of word
+                if (line.length() + spaces.length() +
+                                        word.length() > qxt_d->wordWrapLimit) {
+                    // have to wrap word to next line
                     if(line[0] == '.')
                         rv += ".";
                     rv += line + "\r\n";
-                    line = word;
+                    if (qxt_d->preserveStartSpaces) {
+                        line = startSpaces + word;
+                    } else {
+                        line = word;
+                    }
+                } else { // no wrap required
+                    line += spaces + word;
                 }
-                else if (line.isEmpty())
-                {
-                    line = word;
-                }
-                else
-                {
-                    line = line + ' ' + word;
-                }
-                word = "";
+                word.clear();
+                spaces.clear();
             }
-            else
-            {
-                word += b[i];
+
+            if (ignoredChar || i == len) { // new line or eof
+                // trailing `spaces` are ignored here
+                if(line[0] == '.')
+                    rv += ".";
+                rv += line + "\r\n";
+                line.clear();
+                startSpaces.clear();
+                spaces.clear();
+            } else {
+                spaces += b[i];
             }
-        }
-        if (line.length() + word.length() + 1 > 78)
-        {
-            if(line[0] == '.')
-                rv += ".";
-            rv += line + "\r\n";
-            line = word;
-        }
-        else if (!word.isEmpty())
-        {
-            line += ' ' + word;
-        }
-        if(!line.isEmpty()) {
-            if(line[0] == '.')
-                rv += ".";
-            rv += line + "\r\n";
         }
     }
     else if (useQuotedPrintable)
