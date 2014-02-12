@@ -189,7 +189,11 @@ bool QxtGlobalShortcutPrivate::nativeEventFilter(const QByteArray & eventType,
             // Mod1Mask == Alt, Mod4Mask == Meta
             keystate & (ShiftMask | ControlMask | Mod1Mask | Mod4Mask));
     }
-    return false;
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+    return prevEventFilter ? prevEventFilter(message) : false;
+#else
+	return false;
+#endif
 }
 
 quint32 QxtGlobalShortcutPrivate::nativeModifiers(Qt::KeyboardModifiers modifiers)
