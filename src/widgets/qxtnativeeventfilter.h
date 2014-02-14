@@ -33,6 +33,7 @@
 
 #include "qxtapplication.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 class QxtNativeEventFilter
 {
 public:
@@ -60,5 +61,6 @@ public:
     }
 #endif // Q_OS_MAC
 };
+#endif
 
 #endif // QXTNATIVEEVENTFILTER_H

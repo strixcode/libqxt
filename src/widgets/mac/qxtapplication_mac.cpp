@@ -30,6 +30,7 @@
 *****************************************************************************/
 
 #include "qxtapplication_p.h"
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 #include "qxtnativeeventfilter.h"
 
 /*!
@@ -44,3 +45,4 @@ bool QxtApplication::macEventFilter(EventHandlerCallRef caller, EventRef event)
     }
     return QApplication::macEventFilter(caller, event);
 }
+#endif

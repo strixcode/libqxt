@@ -53,7 +53,7 @@ void QxtItemDelegatePrivate::paintButton(QPainter* painter, const QStyleOptionVi
     // draw the button
     QStyleOptionButton buttonOption;
     buttonOption.state = option.state;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     buttonOption.state |= QStyle::State_Raised;
 #endif
     buttonOption.state &= ~QStyle::State_HasFocus;
