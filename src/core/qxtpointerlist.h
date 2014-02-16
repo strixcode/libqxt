@@ -134,7 +134,7 @@ protected:
     ///reimplement to access objects before they are removed
     virtual void removeThisObject(QObject * obj)
     {
-        removeAll(reinterpret_cast<T*>(obj));
+        this->removeAll(reinterpret_cast<T*>(obj));
     }
     ///reimplement to access objects before they are added
     virtual void addThisObject(QObject * obj)
