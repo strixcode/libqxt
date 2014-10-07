@@ -329,7 +329,12 @@ namespace QxtMetaObject
      */
     bool connect(QObject* sender, const char* signal, QxtBoundFunction* slot, Qt::ConnectionType type)
     {
-        Q_ASSERT(sender);
+        if(!sender) 
+        {
+            qWarning() << "QxtMetaObject::connect: null sender";
+            return false;
+        }
+
         const QMetaObject* meta = sender->metaObject();
         int methodID = meta->indexOfMethod(meta->normalizedSignature(signal).mid(1).constData());
         if (methodID < 0)
