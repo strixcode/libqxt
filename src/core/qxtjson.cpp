@@ -115,7 +115,7 @@ QString QxtJSON::stringify(QVariant v){
                 QString r="[";
                 QStringList l = v.toStringList();
                 foreach(QString i, l){
-                    r+="\""+i+"\",";
+                    r += stringify(i) + ",";
                 }
                 if(r.length()>1)
                     r.chop(1);
@@ -157,6 +157,8 @@ QString QxtJSON::stringify(QVariant v){
                         out.append("\\\\");
                     else if( (*i) == QChar('/'))
                         out.append("\\/");
+                    else if( (*i) == QChar('"'))
+                        out.append("\\\"");
                     else
                         out.append(*i);
                 }
