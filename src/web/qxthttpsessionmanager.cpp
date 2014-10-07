@@ -562,81 +562,85 @@ void QxtHttpSessionManager::processEvents()
     if (content) content->ignoreRemainingContent();
     QHash<QPair<int,int>,QxtWebRequestEvent*>::iterator iPending =
 	qxt_d().pendingRequests.find(QPair<int,int>(sessionID, requestID));
-    if(iPending != qxt_d().pendingRequests.end()){
-	delete *iPending;
-	qxt_d().pendingRequests.erase(iPending);
+    if(iPending != qxt_d().pendingRequests.end()) {
+        delete *iPending;
+        qxt_d().pendingRequests.erase(iPending);
     }
 
-    QxtHttpSessionManagerPrivate::ConnectionState& state = qxt_d().connectionState[connector()->getRequestConnection(requestID)];
-    QIODevice* source;
-    header.setStatusLine(pe->status, pe->statusMessage, state.httpMajorVersion, state.httpMinorVersion);
-
-    if (re)
+    // If no device is returned, the request was aborted before the request body was ready.
+    if(device)
     {
-        header.setValue("location", re->destination);
-    }
+        QxtHttpSessionManagerPrivate::ConnectionState& state = qxt_d().connectionState[connector()->getRequestConnection(requestID)];
+        QIODevice* source;
+        header.setStatusLine(pe->status, pe->statusMessage, state.httpMajorVersion, state.httpMinorVersion);
 
-    // Set custom header values
-    for (QMultiHash<QString, QString>::iterator it = pe->headers.begin(); it != pe->headers.end(); ++it)
-    {
-        header.setValue(it.key(), it.value());
-    }
-
-    header.setContentType(pe->contentType);
-    if (state.httpMajorVersion == 0 || (state.httpMajorVersion == 1 && state.httpMinorVersion == 0))
-        pe->chunked = false;
-
-    source = pe->dataSource;
-    state.finishedTransfer = false;
-    bool emptyContent = !source->bytesAvailable() && !pe->streaming;
-    state.readyRead = source->bytesAvailable();
-    state.streaming = pe->streaming;
-
-    if (emptyContent)
-    {
-        header.setValue("connection", "close");
-        connector()->writeHeaders(device, header);
-        closeConnection(requestID);
-    }
-    else
-    {
-        pe->dataSource = 0;     // so that it isn't destroyed when the event is deleted
-        state.clearHandlers();  // disconnect old handlers
-
-        if (!pe->chunked)
+        if (re)
         {
-            state.keepAlive = false;
-            state.onBytesWritten = QxtMetaObject::bind(this, SLOT(sendNextBlock(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
-            state.onReadyRead = QxtMetaObject::bind(this, SLOT(blockReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
-            state.onAboutToClose = QxtMetaObject::bind(this, SLOT(closeConnection(int)), Q_ARG(int, requestID));
+            header.setValue("location", re->destination);
         }
-        else
-        {
-            header.setValue("transfer-encoding", "chunked");
-            state.onBytesWritten = QxtMetaObject::bind(this, SLOT(sendNextChunk(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
-            state.onReadyRead = QxtMetaObject::bind(this, SLOT(chunkReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
-            state.onAboutToClose = QxtMetaObject::bind(this, SLOT(sendEmptyChunk(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
-        }
-        QxtMetaObject::connect(device, SIGNAL(bytesWritten(qint64)), state.onBytesWritten, Qt::QueuedConnection);
-        QxtMetaObject::connect(source, SIGNAL(readyRead()), state.onReadyRead, Qt::QueuedConnection);
-        QxtMetaObject::connect(source, SIGNAL(aboutToClose()), state.onAboutToClose, Qt::QueuedConnection);
-        QObject::connect(device, SIGNAL(destroyed()), source, SLOT(deleteLater()));
 
-        if (state.keepAlive)
+        // Set custom header values
+        for (QMultiHash<QString, QString>::iterator it = pe->headers.begin(); it != pe->headers.end(); ++it)
         {
-            header.setValue("connection", "keep-alive");
+            header.setValue(it.key(), it.value());
         }
-        else
+
+        header.setContentType(pe->contentType);
+        if (state.httpMajorVersion == 0 || (state.httpMajorVersion == 1 && state.httpMinorVersion == 0))
+            pe->chunked = false;
+
+        source = pe->dataSource;
+        state.finishedTransfer = false;
+        bool emptyContent = !source->bytesAvailable() && !pe->streaming;
+        state.readyRead = source->bytesAvailable();
+        state.streaming = pe->streaming;
+
+        if (emptyContent)
         {
             header.setValue("connection", "close");
+            connector()->writeHeaders(device, header);
+            closeConnection(requestID);
         }
-        connector()->writeHeaders(device, header);
-        if (state.readyRead)
+        else
         {
-            if (pe->chunked)
-                sendNextChunk(requestID, source);
+            pe->dataSource = 0;     // so that it isn't destroyed when the event is deleted
+            state.clearHandlers();  // disconnect old handlers
+
+            if (!pe->chunked)
+            {
+                state.keepAlive = false;
+                state.onBytesWritten = QxtMetaObject::bind(this, SLOT(sendNextBlock(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
+                state.onReadyRead = QxtMetaObject::bind(this, SLOT(blockReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
+                state.onAboutToClose = QxtMetaObject::bind(this, SLOT(closeConnection(int)), Q_ARG(int, requestID));
+            }
             else
-                sendNextBlock(requestID, source);
+            {
+                header.setValue("transfer-encoding", "chunked");
+                state.onBytesWritten = QxtMetaObject::bind(this, SLOT(sendNextChunk(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
+                state.onReadyRead = QxtMetaObject::bind(this, SLOT(chunkReadyRead(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
+                state.onAboutToClose = QxtMetaObject::bind(this, SLOT(sendEmptyChunk(int, QObject*)), Q_ARG(int, requestID), Q_ARG(QObject*, source));
+            }
+            QxtMetaObject::connect(device, SIGNAL(bytesWritten(qint64)), state.onBytesWritten, Qt::QueuedConnection);
+            QxtMetaObject::connect(source, SIGNAL(readyRead()), state.onReadyRead, Qt::QueuedConnection);
+            QxtMetaObject::connect(source, SIGNAL(aboutToClose()), state.onAboutToClose, Qt::QueuedConnection);
+            QObject::connect(device, SIGNAL(destroyed()), source, SLOT(deleteLater()));
+
+            if (state.keepAlive)
+            {
+                header.setValue("connection", "keep-alive");
+            }
+            else
+            {
+                header.setValue("connection", "close");
+            }
+            connector()->writeHeaders(device, header);
+            if (state.readyRead)
+            {
+                if (pe->chunked)
+                    sendNextChunk(requestID, source);
+                else
+                    sendNextBlock(requestID, source);
+            }
         }
     }
 
@@ -723,6 +727,7 @@ void QxtHttpSessionManager::sendEmptyChunk(int requestID, QObject* dataSource)
 void QxtHttpSessionManager::closeConnection(int requestID)
 {
     QIODevice* device = connector()->getRequestConnection(requestID);
+    if(!device) return;
     QxtHttpSessionManagerPrivate::ConnectionState& state = qxt_d().connectionState[device];
     state.finishedTransfer = true;
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(device);
