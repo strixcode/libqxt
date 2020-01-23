@@ -180,7 +180,7 @@ This uses QxtSignalWaiter so it will _not_ block your current thread.
 
 QVariant QxtFuture::delayedResult(int msec)
 {
-    if (!waiter->wait(msec, false))
+    if (!waiter->wait(msec))
         return QVariant();
     return job->result();
 }
